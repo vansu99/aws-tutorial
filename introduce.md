@@ -1,3 +1,35 @@
+## Services
+
+### Compute
+
+- EC2
+- Lambda
+- Fargate
+- Lightsail
+- Outposts
+- Batch
+
+### Storage
+
+- S3
+- EBS
+- EFS
+- Storage Gateway
+
+### Content Delivery
+
+- CloudFont
+- Global Accelerator
+- S3 Transfer Acceleration
+
+### Networking
+
+### Database
+
+### Developer Tools
+
+###
+
 ## Tham khảo
 
 - Study note:
