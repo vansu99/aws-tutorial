@@ -55,4 +55,15 @@
 - Availability: 99.99%
 - Durability: 99.999999999 (11 số 9)
 
-### Storage classes
+### Charges
+
+- Số lần request file
+- Storage management Pricing
+- Data transfer pricing
+- Transfer Acceleration
+- Sử dụng CloudFront để tăng tốc độ truyền tải file
+- Cross region replication pricing
+
+## Mindmap
+
+![iam-s3](./images/s3.png)
