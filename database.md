@@ -36,7 +36,7 @@
 
 ### Multi-AZ
 
-![Multi-AZ](images/multi-az.png)
+![Multi-AZ](https://github.com/minhntm/aws-solutions-architect-associate-certificate/raw/master/images/multi-az.png)
 
 - copy database in another AZ
 - **for Disaster Recovery only** (availability, failover) **(**want to improve performance ⇒ use Read Replicas)
@@ -44,7 +44,7 @@
 
 ### Read Replica
 
-![Read Replicas](images/read-replica.png)
+![Read Replicas](https://github.com/minhntm/aws-solutions-architect-associate-certificate/raw/master/images/read-replica.png)
 
 - **Used for scaling**, increase performance, not for Disaster Recovery
 - must have automatic backups turned on
@@ -72,7 +72,7 @@
 
 ## Redshift
 
-![Redshift](https://github.com/minhntm/aws-solutions-architect-associate-certificate/raw/master/images/multi-az.png)
+![Redshift](https://github.com/minhntm/aws-solutions-architect-associate-certificate/raw/master/images/redshift.png)
 
 - Enabled by default with a 1 day retention period (maximum is 35 days)
 - always maintain at least 3 copies of your data (the original, replica on the compute nodes and a backup in S3)
