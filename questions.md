@@ -101,7 +101,7 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 - Dùng khi bạn chỉ cần kết nối một vài VPC cụ thể.
 - Đảm bảo không trùng CIDR trước khi tạo Peering.
 
-### Transit Gateway – Trung tâm kết nối nhiều VPC 
+### Transit Gateway – Trung tâm kết nốGắn được 1 EC2 tại 1 thời điểm (không phải ổ đĩa mạng)i nhiều VPC 
 - Giải pháp thay thế khi có nhiều VPC cần giao tiếp với nhau (kể cả on-premise).
 - Có tính transitive: A → TGW ← B ← TGW → C ⇒ A có thể nói chuyện với C qua Transit Gateway.
 - Dùng Transit Gateway thay vì Peering khi có từ 3 VPC trở lên để giảm độ phức tạp kết nối.
@@ -112,5 +112,25 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 - Ví dụ: Dùng EIP cho máy chủ chính để giữ IP không đổi ngay cả khi phải tạo lại EC2 mới.
 - Chỉ sử dụng khi bạn thật sự cần một IP cố định, ví dụ để cấu hình DNS công khai hoặc firewall cố định
 
+### Amazon Machine Image (AMI)
+- Là mẫu (template) để tạo EC2 instance. AMI chứa:
+  + Hệ điều hành (OS)
+  + Ứng dụng máy chủ (web server, database, v.v.)
+  + Cấu hình phần mềm khác
+  + Thông tin quyền khởi chạy
+- Loại AMI:
+  + EBS-backed: lưu dữ liệu ổ đĩa trong EBS (dữ liệu sẽ giữ lại khi tắt máy)
+  + Instance Store-backed: lưu trong ổ đĩa vật lý tạm thời (bị mất khi tắt máy)
+  + Ví dụ: Bạn tạo một EC2, cài Apache + PHP, sau đó tạo một custom AMI để tái sử dụng cấu hình cho lần sau.
+
+### Elastic Block Store (EBS)
+- Ổ đĩa gắn vào từng EC2 instance (giống như ổ cứng trong máy tính).
+- Gắn được 1 EC2 tại 1 thời điểm (không phải ổ đĩa mạng)
+- Có thể tạo snapshot để sao lưu
+- Root volume (ổ chứa OS) mặc định sẽ bị xóa khi EC2 bị terminate
+- Dùng GP3 cho web/app phổ thông. Dùng IO2 khi cần performance cao như database sản xuất (PostgreSQL, Oracle...).
+- Dùng AWS Data Lifecycle Manager để tự động tạo snapshot định kỳ cho backup.
+
+### Auto Scaling Policies
 
 
