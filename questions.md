@@ -60,4 +60,57 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 - Mặc định cho phép tất cả request đi và đến trên mọi port.
 - Request phản hồi cần được cho phép rõ ràng, không được tự động xử lý như trong Security Groups.
 
-###
+### Security Groups (SGs)
+- SG hoạt động ở cấp độ instance (ví dụ: EC2 instance) và có tính chất "stateful" (có ghi nhớ trạng thái kết nối).
+- Chỉ định nghĩa các luật "cho phép" (allow), không có luật "chặn" (deny) như ở NACLs.
+- cho phép các instance trong cùng một SG giao tiếp với nhau, cho phép toàn bộ lưu lượng đi ra ngoài, và chặn toàn bộ lưu lượng đến từ bên ngoài.
+- Có thể gán hoặc gỡ SG khỏi instance bất kỳ lúc nào mà không cần dừng máy (EC2 instance).
+- Luôn chỉ định rõ ràng dải IP qua CIDR, không dùng IP đơn lẻ (nếu muốn IP đơn thì dùng /32).
+
+### CIDR (Classless Inter-Domain Routing)
+- Là cách xác định dải IP bằng việc dùng subnet mask.
+- Được sử dụng rộng rãi trong AWS, như SGs, VPCs, Subnets,...
+- Ví dụ: 10.0.0.0/24 → chứa 256 địa chỉ IP (từ 10.0.0.0 đến 10.0.0.255) ; 10.0.0.0/16 → chứa 65,536 IP
+- Lên kế hoạch dải IP kỹ lưỡng, tránh bị trùng khi dùng VPC Peering hoặc mở rộng hệ thống.
+
+### VPC Endpoints
+- Giúp truy cập dịch vụ AWS từ trong VPC mà không cần truy cập internet công cộng.
+- Gateway Endpoint:
+  + Dành cho S3 và DynamoDB.
+  + Tạo một "cổng" trong VPC để truy cập dịch vụ, không cần dùng Internet Gateway hay NAT.
+- Interface Endpoint:
+  + Dùng cho các dịch vụ khác (EC2, SSM, SNS,...).
+  + Sử dụng AWS PrivateLink để đảm bảo kết nối riêng tư qua ENI (Elastic Network Interface).
+- Luôn sử dụng VPC Endpoint nếu muốn tăng bảo mật bằng cách không cho lưu lượng ra internet mà vẫn gọi được các dịch vụ AWS.
+
+### NAT Gateway & NAT Instance – Kết nối subnet private ra internet
+- Khi bạn có subnet riêng (private subnet) và muốn các instance trong đó truy cập internet (ví dụ tải package) mà không muốn chúng bị truy cập từ bên ngoài.
+- NAT Instance:
+  + Tự quản lý (cài đặt, cập nhật, scale), không có auto-scaling mặc định.
+  + Dễ cấu hình nhưng tốn công quản lý, ít được khuyến khích.
+- NAT Gateway:
+  + Dịch vụ do AWS quản lý, tự động scale, hiệu suất cao và đáng tin cậy hơn.
+  + Khuyến nghị sử dụng trong môi trường production.
+- Dùng NAT Gateway thay vì NAT Instance nếu không có nhu cầu đặc biệt cần tự quản lý.
+  
+### VPC Peering – Kết nối VPC với VPC
+- Cho phép hai VPC giao tiếp trực tiếp với nhau thông qua IP.
+- Có thể kết nối giữa các tài khoản AWS khác nhau.
+- CIDR của 2 VPC không được trùng nhau.
+- Kết nối không có tính "transitive": A <– Peering –> B <– Peering –> C ⇒ A không thể giao tiếp với C
+- Dùng khi bạn chỉ cần kết nối một vài VPC cụ thể.
+- Đảm bảo không trùng CIDR trước khi tạo Peering.
+
+### Transit Gateway – Trung tâm kết nối nhiều VPC 
+- Giải pháp thay thế khi có nhiều VPC cần giao tiếp với nhau (kể cả on-premise).
+- Có tính transitive: A → TGW ← B ← TGW → C ⇒ A có thể nói chuyện với C qua Transit Gateway.
+- Dùng Transit Gateway thay vì Peering khi có từ 3 VPC trở lên để giảm độ phức tạp kết nối.
+
+### Elastic IP Address (EIP)
+- IP tĩnh do AWS cấp phát, có thể di chuyển giữa các instance khác nhau trong cùng region.
+- Không gán thì không mất tiền, gán rồi không dùng thì bị tính phí.
+- Ví dụ: Dùng EIP cho máy chủ chính để giữ IP không đổi ngay cả khi phải tạo lại EC2 mới.
+- Chỉ sử dụng khi bạn thật sự cần một IP cố định, ví dụ để cấu hình DNS công khai hoặc firewall cố định
+
+
+
