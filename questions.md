@@ -425,3 +425,24 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Kích hoạt CloudTrail Insights
   + Giới hạn truy cập log: Áp dụng principle of least privilege cho IAM user/role truy cập log
   + Thiết lập retention policy phù hợp
+
+
+### AWS CloudWatch vs CloudTrail: So sánh và hướng dẫn sử dụng
+
+#### 1. Khác biệt cơ bản
+
+#### Bảng so sánh
+
+| Đặc điểm          | CloudWatch                          | CloudTrail                          |
+|-------------------|-------------------------------------|-------------------------------------|
+| **Mục đích**      | Giám sát hiệu năng hệ thống        | Audit hoạt động quản lý            |
+| **Dữ liệu thu**   | Metrics, logs, events              | API calls, thay đổi cấu hình       |
+| **Định dạng**     | Số liệu/metrics và logs text       | Events JSON                        |
+| **Trọng tâm**     | "Hệ thống thế nào?"                | "Ai làm gì?"                       |
+
+
+
+
+
+
+
