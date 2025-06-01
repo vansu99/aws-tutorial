@@ -427,19 +427,15 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Thiết lập retention policy phù hợp
 
 
-### AWS CloudWatch vs CloudTrail: So sánh và hướng dẫn sử dụng
+### AWS CloudWatch vs CloudTrail: So sánh
 
-#### 1. Khác biệt cơ bản
-
-#### Bảng so sánh
-
-| Đặc điểm          | CloudWatch                          | CloudTrail                          |
+| Feature          | CloudWatch                          | CloudTrail                          |
 |-------------------|-------------------------------------|-------------------------------------|
-| **Mục đích**      | Giám sát hiệu năng hệ thống        | Audit hoạt động quản lý            |
-| **Dữ liệu thu**   | Metrics, logs, events              | API calls, thay đổi cấu hình       |
-| **Định dạng**     | Số liệu/metrics và logs text       | Events JSON                        |
-| **Trọng tâm**     | "Hệ thống thế nào?"                | "Ai làm gì?"                       |
-
+| **Purpose**      | Giám sát hiệu năng hệ thống        | Audit hoạt động quản lý            |
+| **Data Collected**   | Metrics, logs, events              | API calls, thay đổi cấu hình       |
+| **Data Format**     | Số liệu/metrics và logs text       | Events JSON                        |
+| **Pricing Model**     | Pay per metric/log/alert                 | "Ai làm gì?"                       |
+| **Storage**          | CloudWatch Logs (retention configurable)| S3 bucket (infinite retention possible) |
 
 
 
