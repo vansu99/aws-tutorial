@@ -434,7 +434,7 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 | **Purpose**      | Giám sát hiệu năng hệ thống        | Audit hoạt động quản lý            |
 | **Data Collected**   | Metrics, logs, events              | API calls, thay đổi cấu hình       |
 | **Data Format**     | Số liệu/metrics và logs text       | Events JSON                        |
-| **Pricing Model**     | Pay per metric/log/alert                 | "Ai làm gì?"                       |
+| **Pricing Model**     | Pay per metric/log/alert                 | Pay per event delivered                     |
 | **Storage**          | CloudWatch Logs (retention configurable)| S3 bucket (infinite retention possible) |
 
 
