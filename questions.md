@@ -212,6 +212,48 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
         + Không cần đợi CloudWatch metric phản hồi
    
 
+### Route 53
+- Route 53 là một dịch vụ quản lý tên miền (DNS) được AWS quản lý hoàn toàn, cho phép bạn định tuyến người dùng đến các tài nguyên trên AWS hoặc bên ngoài AWS một cách nhanh chóng và đáng tin cậy.
+- Cấu hình Failover:
+  + Active-Active Configuration (Cấu hình hoạt động song song)
+    + Khi bạn muốn tất cả tài nguyên cùng hoạt động liên tục, chia tải với nhau.
+    + Cách hoạt động: Route 53 định tuyến đến nhiều tài nguyên đồng thời. Nếu một trong số đó không còn hoạt động (unhealthy), Route 53 tự động loại bỏ tài nguyên đó khỏi kết quả DNS.
+    + Ví dụ: 2 web server đặt ở 2 vùng khác nhau (US-East-1, US-West-1) cùng phục vụ một website.
+    + Best Practice: Sử dụng health checks để theo dõi trạng thái của từng tài nguyên.
+  + Active-Passive Configuration (Cấu hình hoạt động-dự phòng)
+    + Khi bạn có một nhóm tài nguyên chính hoạt động thường xuyên và một nhóm dự phòng chỉ sử dụng khi nhóm chính gặp sự cố.
+    + Cách hoạt động: Bình thường chỉ định tuyến đến nhóm chính. Khi tất cả nhóm chính đều hỏng, Route 53 bắt đầu chỉ định tuyến đến nhóm dự phòng.
+    + Ví dụ: Một web app chạy ở US-East-1 và backup dự phòng ở EU-West-1 chỉ hoạt động khi khu vực chính có sự cố.
+    + Best Practice: Cấu hình health check và cấu hình weight/priority để định tuyến phù hợp.
+
+
+### RDS
+- Amazon RDS cung cấp cơ sở dữ liệu có thể mở rộng và được quản lý hoàn toàn.
+- Multi-AZ deployments: sao lưu đồng bộ dữ liệu giữa nhiều AZ, tăng tính sẵn sàng.
+- Tính giá theo mức sử dụng.
+- Hỗ trợ scale chiều ngang (read replicas) và dọc (tăng cấu hình).
+- Minimal downtime khi scale.
+- Các engine được hỗ trợ: MySQL, MariaDB, PostgreSQL, Oracle, SQL Server (không hỗ trợ read replicas ở vùng khác), Aurora
+- Best Practice:
+  + Dùng Aurora Serverless cho ứng dụng có tải biến động.
+  + Kết hợp với IAM authentication để quản lý truy cập an toàn hơn.
+
+
+### Lambda - Serverless
+- AWS Lambda cho phép bạn chạy code mà không cần quản lý máy chủ.
+- Tự động scale theo số lượng yêu cầu.
+- Tích hợp với các dịch vụ như S3, SQS, SNS, API Gateway.
+- Có thể gắn vào VPC mà không cần lo về ENI/Private IP như trước.
+- Lambda Layer: quản lý dependency dùng chung giữa các function.
+- Destination: Sau khi chạy xong, có thể chỉ định một service khác nhận kết quả (thành công hoặc thất bại).
+- Best Practice:
+  + Dùng Graviton2 nếu cần hiệu năng cao và tiết kiệm chi phí.
+  + Đặt timeout, bộ nhớ hợp lý để tránh lỗi OutOfMemory hoặc timeout.
+  + Tránh đặt quá nhiều logic vào một function → chia nhỏ chức năng.
+
+
+
+
 
 
 
