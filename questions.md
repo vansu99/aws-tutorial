@@ -385,5 +385,43 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 - Có thể lưu trữ thông điệp bằng cách chuyển đến Kinesis Firehose rồi đưa vào S3 hoặc Redshift để phân tích.
 
 
-### Amazon SQS (Simple Queue Service)
-
+### CloudTrail 
+- CloudTrail là dịch vụ giám sát và ghi lại mọi hoạt động trong tài khoản AWS của bạn dưới dạng JSON (so sánh với CloudWatch, CloudTrail tập trung vào ghi log hoạt động quản lý tài khoản).
+- Có thể quyết định sự kiện nào được theo dõi bằng cách tạo "trails" (đường dẫn log). Mỗi trail sẽ chuyển tiếp sự kiện đến:
+  + S3 bucket (để lưu trữ lâu dài)
+  + CloudWatch Logs group (để phân tích real-time)
+- Các loại sự kiện CloudTrail ghi lại:
+  + Management Events
+    + Các thao tác quản lý hạ tầng AWS
+    + Ví dụ:
+        + Thay đổi IAM policy
+        + Tạo mới VPC subnet
+        + Khởi tạo EC2 instance
+  + Data Events
+    + Các thao tác đọc/ghi/xóa dữ liệu trong tài khoản
+    + Ví dụ:
+        + CRUD trên DynamoDB
+        + GET object trong S3
+        + Upload file lên S3
+  + Insight Events
+    + Ghi nhận các bất thường trong cách sử dụng API dựa trên lịch sử hoạt động
+    + Ví dụ:
+        + Đột ngột có nhiều request xóa dữ liệu S3
+        + Số lần login IAM tăng đột biến
+- Customize tracking:
+  + Chỉ theo dõi thao tác modify/delete trên DynamoDB, bỏ qua các thao tác đọc
+  + Chỉ ghi lại các thay đổi security group
+- Best Practice:
+  + Bật CloudTrail trên toàn bộ regions
+    + Kích hoạt multi-region trail để đảm bảo ghi lại mọi hoạt động dù xảy ra ở region nào
+  + Tích hợp với S3 và CloudWatch Logs
+    + Lưu trữ log vào S3 với versioning và bucket policy nghiêm ngặt
+    + Forward log sang CloudWatch để cảnh báo real-time
+  + Mã hóa log file
+    + Sử dụng KMS để mã hóa log file trước khi lưu vào S3
+  + Kích hoạt Data Events cho các dịch vụ quan trọng
+    + Ví dụ: S3, DynamoDB, Lambda nếu cần audit chi tiết
+  + Thiết lập cảnh báo cho các hoạt động nguy hiểm
+  + Kích hoạt CloudTrail Insights
+  + Giới hạn truy cập log: Áp dụng principle of least privilege cho IAM user/role truy cập log
+  + Thiết lập retention policy phù hợp
