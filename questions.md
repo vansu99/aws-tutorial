@@ -233,6 +233,32 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
     + Best Practice: Cấu hình health check và cấu hình weight/priority để định tuyến phù hợp.
 
 
+### Key Management Service - KMS
+- KMS là "người giữ chìa khóa" an toàn nhất, bạn dùng dịch vụ khác (S3, EBS, RDS...) thì "gửi đồ" cho KMS mã hóa/giải mã giúp, nhưng bạn kiểm soát ai được dùng chìa.
+- Mục đích: giữ an toàn cho dữ liệu của bạn, cả khi lưu trữ và truyền tải.
+- Mã hóa AMI và EBS Volume:
+  + Có thể chia sẻ khóa với nhiều tài khoản AWS bằng cách thêm quyền cho các tài khoản khác trên khóa chính (CMK).
+- Tích hợp sẵn với các dịch vụ như S3, SQS, DynamoDB để tự động mã hóa dữ liệu.
+- Cách hoạt động đơn giản:
+  + Bạn tạo một CMK (Customer Master Key) trong KMS.
+  + Khi mã hóa một file, KMS sinh ra một "data key", dùng để mã hóa file.
+  + KMS mã hóa luôn cái "data key" đó bằng CMK bạn đã tạo.
+  + Khi giải mã, KMS dùng CMK để giải mã lại data key, sau đó dùng data key để giải mã file.
+  + Như vậy khóa chính không bao giờ ra ngoài, AWS chỉ trả về kết quả mã hóa/giải mã.
+- Khi nào cần dùng? Khi cần mã hóa các dữ liệu sau: 
+  + Dữ liệu lưu trong S3 (hình ảnh, tài liệu,...)
+  + EBS chứa hệ điều hành hoặc database
+  + Cơ sở dữ liệu RDS
+  + Tin nhắn trong SQS
+  + Hoặc bạn muốn mã hóa chuỗi nhạy cảm như mật khẩu, token...
+- Ví dụ:
+  + Mã hóa dữ liệu lưu trữ trong S3 bằng KMS để bảo vệ nội dung nhạy cảm như thông tin khách hàng.
+  + Tạo CMK riêng trong KMS và phân quyền sử dụng cho team hoặc dịch vụ cụ thể.
+- Lưu ý:
+  + Mã hóa với KMS không miễn phí: có phí theo số lần gọi API và số khóa bạn tạo.
+  + Nếu dùng sai quyền IAM/KMS Policy, ứng dụng có thể bị lỗi không giải mã được → phải test kỹ.
+
+
 ### RDS
 - Amazon RDS cung cấp cơ sở dữ liệu có thể mở rộng và được quản lý hoàn toàn.
 - Multi-AZ deployments: sao lưu đồng bộ dữ liệu giữa nhiều AZ, tăng tính sẵn sàng.
