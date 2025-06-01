@@ -36,10 +36,10 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 - Nếu bạn cần truy cập SSH từ internet đến một tài nguyên trong private subnet, bạn cần cấu hình một Bastion Host trong public subnet, đồng thời điều chỉnh Security Groups và Network Access Control Lists (NACLs) để cho phép chuyển tiếp request trên port 22.
 
 ### Disaster Recovery Plans
-- Backup and Restore – có RTO (Recovery Time Objective) và RPO (Recovery Point Objective) cao nhất nhưng chi phí thấp nhất.
-- Pilot Light – lưu trữ các hệ thống quan trọng ở trạng thái tối thiểu làm mẫu, từ đó có thể mở rộng nhanh chóng khi xảy ra issue.
-- Warm Standby – duy trì phiên bản sao của các hệ thống quan trọng luôn chạy sẵn, sẵn sàng tiếp quản khi cần.
-- Multi-Site – có RTO và RPO thấp nhất nhưng chi phí cao nhất.
+- **Backup and Restore** – có RTO (Recovery Time Objective) và RPO (Recovery Point Objective) cao nhất nhưng chi phí thấp nhất.
+- **Pilot Light** – lưu trữ các hệ thống quan trọng ở trạng thái tối thiểu làm mẫu, từ đó có thể mở rộng nhanh chóng khi xảy ra issue.
+- **Warm Standby** – duy trì phiên bản sao của các hệ thống quan trọng luôn chạy sẵn, sẵn sàng tiếp quản khi cần.
+- **Multi-Site** – có RTO và RPO thấp nhất nhưng chi phí cao nhất.
 
 ### Route Tables
 - Xác định cách request mạng sẽ di chuyển trong VPC.
@@ -75,20 +75,20 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 
 ### VPC Endpoints
 - Giúp truy cập dịch vụ AWS từ trong VPC mà không cần truy cập internet công cộng.
-- Gateway Endpoint:
+- **Gateway Endpoint**:
   + Dành cho S3 và DynamoDB.
   + Tạo một "cổng" trong VPC để truy cập dịch vụ, không cần dùng Internet Gateway hay NAT.
-- Interface Endpoint:
+- **Interface Endpoint**:
   + Dùng cho các dịch vụ khác (EC2, SSM, SNS,...).
   + Sử dụng AWS PrivateLink để đảm bảo kết nối riêng tư qua ENI (Elastic Network Interface).
 - Luôn sử dụng VPC Endpoint nếu muốn tăng bảo mật bằng cách không cho lưu lượng ra internet mà vẫn gọi được các dịch vụ AWS.
 
 ### NAT Gateway & NAT Instance – Kết nối subnet private ra internet
 - Khi bạn có subnet riêng (private subnet) và muốn các instance trong đó truy cập internet (ví dụ tải package) mà không muốn chúng bị truy cập từ bên ngoài.
-- NAT Instance:
+- **NAT Instance**:
   + Tự quản lý (cài đặt, cập nhật, scale), không có auto-scaling mặc định.
   + Dễ cấu hình nhưng tốn công quản lý, ít được khuyến khích.
-- NAT Gateway:
+- **NAT Gateway**:
   + Dịch vụ do AWS quản lý, tự động scale, hiệu suất cao và đáng tin cậy hơn.
   + Khuyến nghị sử dụng trong môi trường production.
 - Dùng NAT Gateway thay vì NAT Instance nếu không có nhu cầu đặc biệt cần tự quản lý.
@@ -133,11 +133,11 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 
 ### Auto Scaling Policies
 - Cơ chế tự động thêm/bớt EC2 instance dựa trên tải hệ thống (CPU, Network, …)
-- Target Tracking:
+- **Target Tracking**:
   + Bạn chọn một metric (VD: CPU = 50%)
   + Auto Scaling sẽ tự động tạo CloudWatch alarm và scale theo.
   + Có thể định nghĩa thời gian "warm-up" để tránh scale ảo do EC2 mới tạo có CPU cao.
-- Step Scaling:
+- **Step Scaling**:
   + Cho phép scale theo "step", tùy theo mức độ vi phạm threshold.
   + Ví dụ: Nếu CPU vượt 20% thì thêm 1 instance, nếu vượt 40% thì thêm 3 instance.
 - Ví dụ thực tế 1:
@@ -153,7 +153,7 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Giải pháp Auto Scaling:
     + Tăng thêm EC2 khi CPU vượt quá 70%
     + Giảm bớt EC2 khi CPU thấp hơn 30%
-- Ví dụ cấu hình Step Scaling Policy:
+- Ví dụ cấu hình ***Step Scaling Policy***:
   + Giả sử bạn có:
     + Desired: 10 instances
     + Policy:
@@ -172,7 +172,7 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Bật Auto Scaling Group với Target Tracking Policy
   + Giám sát bằng CloudWatch Dashboards
   + Thiết lập cảnh báo (Alarm) nếu số instance lên quá cao
-- Scaling based on SQS (Amazon Simple Queue Service)
+- ***Scaling based on SQS (Amazon Simple Queue Service)***
   + Tự động scale (tăng/giảm) số lượng EC2 instances hoặc container dựa trên số lượng tin nhắn chờ xử lý trong SQS, ví dụ như hệ thống xử lý đơn hàng, email, video encode, v.v.
   + Nếu có nhiều tin nhắn trong queue, hệ thống cần thêm worker (EC2 instance, Lambda, ECS Task…) để xử lý nhanh hơn.
   + Nếu không còn tin nhắn, bạn nên giảm số lượng instance để tiết kiệm chi phí.
@@ -185,3 +185,36 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
       + Nếu > 100 tin nhắn trong queue → Scale out (tăng instance)
       + Nếu < 10 tin nhắn → Scale in (giảm instance)
     + Gắn các alarm này vào Scaling Policy trong ASG
+    + Ví dụ thực tế 1:
+      + Hệ thống gửi email marketing:
+        + Mỗi lần người dùng gửi chiến dịch, hệ thống đưa email vào SQS
+        + EC2 worker sẽ nhận email từ queue và gửi đi
+        + Nếu số email tồn trong queue vượt 100 → scale thêm 2 EC2 worker
+        + Khi còn dưới 10 → giảm số worker xuống còn 1
+      + Giải pháp:
+        + Tăng hoặc giảm số lượng instance tại thời điểm cố định trong ngày hoặc tuần, ví dụ như:
+        + Tăng EC2 vào ban ngày (giờ cao điểm)
+        + Giảm EC2 vào ban đêm để tiết kiệm chi phí
+        + Vào **Auto Scaling Group** trong EC2 console
+        + Chọn tab **Automatic Scaling** > **Add Scheduled Action**
+        + Nhập các thông tin:
+          + Name: scale-up-morning
+          + Start time: 08:00 AM hàng ngày
+          + Min/Max/Desired capacity: ví dụ set desired = 6
+          + Recurrence: ví dụ 0 8 * * * (theo cron expression)
+        + Có thể tạo thêm 1 hành động để scale down vào 22:00 với desired = 1
+    + Ví dụ thực tế 2:
+      + Hệ thống đặt hàng online:
+        + Giờ cao điểm là từ 9:00 đến 22:00
+        + Bạn đặt lịch:
+          + 09:00: Scale lên 8 instance
+          + 22:00: Scale xuống 2 instance
+        + Không cần đợi CloudWatch metric phản hồi
+   
+
+
+
+
+
+
+
