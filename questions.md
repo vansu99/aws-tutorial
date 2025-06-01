@@ -132,5 +132,44 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 - Dùng AWS Data Lifecycle Manager để tự động tạo snapshot định kỳ cho backup.
 
 ### Auto Scaling Policies
-
+- Cơ chế tự động thêm/bớt EC2 instance dựa trên tải hệ thống (CPU, Network, …)
+- Target Tracking:
+  + Bạn chọn một metric (VD: CPU = 50%)
+  + Auto Scaling sẽ tự động tạo CloudWatch alarm và scale theo.
+  + Có thể định nghĩa thời gian "warm-up" để tránh scale ảo do EC2 mới tạo có CPU cao.
+- Step Scaling:
+  + Cho phép scale theo "step", tùy theo mức độ vi phạm threshold.
+  + Ví dụ: Nếu CPU vượt 20% thì thêm 1 instance, nếu vượt 40% thì thêm 3 instance.
+- Ví dụ thực tế 1:
+  + Desired capacity: 10 EC2
+  + CPU tăng từ 50% → 60% → scale out +1 instance
+  + Sau cooldown, CPU tăng tiếp đến 70% → scale out +3 instance nữa
+- Ví dụ thực tế 2:
+  + Trường hợp sử dụng trong Thương mại điện tử
+  + Giả sử bạn có một website bán hàng giống Shopee hay Tiki, chạy trên EC2, và có traffic truy cập cao vào buổi trưa hoặc khung giờ Flash Sale 20h tối.
+  + Vấn đề:
+    + Nếu bạn chạy cố định 10 EC2, ban ngày thì lãng phí tiền, vì ít người truy cập.
+    + Nếu bạn chỉ chạy 2 EC2, lúc cao điểm có thể bị sập website.
+  + Giải pháp Auto Scaling:
+    + Tăng thêm EC2 khi CPU vượt quá 70%
+    + Giảm bớt EC2 khi CPU thấp hơn 30%
+- Ví dụ cấu hình Step Scaling Policy:
+  + Giả sử bạn có:
+    + Desired: 10 instances
+    + Policy:
+      - Nếu CPU tăng 10–20% → Tăng 1 instance
+      - Nếu tăng 20–30% → Tăng 2 instances
+      - Nếu tăng >30% → Tăng 3 instances
+    + CPU tăng từ 50% → 70% (tức +20%) → tăng 2 instances
+    + Nếu sau đó tăng tiếp lên 90% → tăng thêm 3 instances
+    + Scale-in cũng hoạt động tương tự: nếu CPU giảm nhiều, bạn có thể giảm 1–2–3 instances theo từng mức.
+- Không nên scale nhiều lần liên tục → nên thiết lập cooldown hợp lý
+- Luôn sử dụng CloudWatch để giám sát metric và kết hợp Auto Scaling
+- Không thể scale trên nhiều region
+- Cách tiếp cận nhẹ nhàng:
+  + Dùng Launch Template
+  + Gắn với Application Load Balancer
+  + Bật Auto Scaling Group với Target Tracking Policy
+  + Giám sát bằng CloudWatch Dashboards
+  + Thiết lập cảnh báo (Alarm) nếu số instance lên quá cao
 
