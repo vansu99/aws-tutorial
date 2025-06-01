@@ -252,7 +252,21 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Tránh đặt quá nhiều logic vào một function → chia nhỏ chức năng.
 
 
-
+### CloudFront - CDN
+- CloudFront giúp phân phối nội dung tĩnh hoặc động gần với người dùng hơn, cải thiện tốc độ tải và giảm tải server gốc.
+- Có hơn 225 edge location + 13 mid-tier caches trên toàn thế giới.
+- Multiple origins: một phân phối có thể truy xuất dữ liệu từ nhiều nguồn.
+- Cache policy tùy chỉnh: kiểm soát phần nào của request dùng làm khóa cache.
+- Lambda@Edge / CloudFront Functions: chạy code tại edge location (thường dùng để rewrite URL, xử lý xác thực nhẹ,...).
+- Geo restriction: giới hạn truy cập theo quốc gia.
+- Tích hợp WAF: kiểm soát request HTTP/S và bảo vệ nội dung khỏi tấn công.
+- Ví dụ:
+  + Website toàn cầu → dùng CloudFront phân phối ảnh và nội dung tĩnh từ S3, giảm độ trễ.
+  + Dùng WAF để chặn bot hoặc IP xấu.
+- Best Practice:
+  + Thiết lập TTL hợp lý để tận dụng caching nhưng vẫn đảm bảo cập nhật nhanh khi nội dung thay đổi.
+  + Dùng Origin Groups để cấu hình failover cho nguồn gốc (giống như S3 + EC2 fallback).
+  + Tích hợp với Lambda@Edge để xử lý URL redirect, header injection.
 
 
 
