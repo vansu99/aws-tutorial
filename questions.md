@@ -172,4 +172,16 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Bật Auto Scaling Group với Target Tracking Policy
   + Giám sát bằng CloudWatch Dashboards
   + Thiết lập cảnh báo (Alarm) nếu số instance lên quá cao
-
+- Scaling based on SQS (Amazon Simple Queue Service)
+  + Tự động scale (tăng/giảm) số lượng EC2 instances hoặc container dựa trên số lượng tin nhắn chờ xử lý trong SQS, ví dụ như hệ thống xử lý đơn hàng, email, video encode, v.v.
+  + Nếu có nhiều tin nhắn trong queue, hệ thống cần thêm worker (EC2 instance, Lambda, ECS Task…) để xử lý nhanh hơn.
+  + Nếu không còn tin nhắn, bạn nên giảm số lượng instance để tiết kiệm chi phí.
+  + Metric chính thường dùng `ApproximateNumberOfMessagesVisible`
+  + Cách thiết lập Auto Scaling theo SQS:
+    + Trường hợp 1: Auto Scaling EC2 bằng SQS (ví dụ: worker xử lý tin nhắn)
+    + Tạo Auto Scaling Group (ASG) cho các EC2 worker
+    + Trong CloudWatch, tạo Alarm cho metric: SQS > Queue Metrics > ApproximateNumberOfMessagesVisible
+    + Thiết lập Alarm như sau:
+      + Nếu > 100 tin nhắn trong queue → Scale out (tăng instance)
+      + Nếu < 10 tin nhắn → Scale in (giảm instance)
+    + Gắn các alarm này vào Scaling Policy trong ASG
