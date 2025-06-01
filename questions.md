@@ -1,3 +1,9 @@
+### Pricing and Support
+
+- **Free Tier**: Try AWS services free for 12 months.
+- **Pricing Calculator**: Estimate monthly costs.
+- **Support Plans**: From basic to enterprise-level.
+
 ### Abstracted Services / Managed Services
 
 Thường sẽ dẫn đến các dịch vụ như:
