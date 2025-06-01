@@ -301,8 +301,89 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Tích hợp với Lambda@Edge để xử lý URL redirect, header injection.
 
 
+### IAM (Identity and Access Management)
+- Hệ thống quản lý truy cập và định danh – bảo mật trong AWS.
+- Không dùng tài khoản root để làm việc hằng ngày – tạo IAM user riêng, bật MFA.
+- Các thành phần chính:
+  + User: Người dùng, đăng nhập console hoặc API.
+  + Group: Nhóm user chia sẻ quyền.
+  + Policy: Tập hợp quyền, dạng JSON.
+  + Role: Vai trò có thể được assume bởi user/dịch vụ để có quyền tạm thời.
+- Mặc định mọi hành động đều bị từ chối, cần cho phép cụ thể trong policy.
+- Explicit deny (từ chối rõ ràng) sẽ ưu tiên hơn allow.
+- Best practice:
+  + Dùng policy nguyên tắc “least privilege” – chỉ cấp đúng quyền cần thiết.
+  + Gắn role vào EC2 hoặc Lambda thay vì dùng access key thủ công.
+
+### CloudWatch
+- Log Events: Dòng log có thời gian, từ các dịch vụ như Lambda, ECS.
+- Log Groups: Nhóm các log liên quan đến cùng 1 dịch vụ.
+- Log Streams: Mức chi tiết hơn, ví dụ log của 1 Lambda instance cụ thể.
+- Metrics: Số liệu hệ thống (CPU, RAM...), được thu thập mặc định và không tính phí.
+- X-Ray: Theo dõi yêu cầu phân tán (distributed tracing) – xem request đi qua các dịch vụ nào.
+- Alarms: Thiết lập cảnh báo, có thể:
+  + Gửi email qua SNS.
+  + Kích hoạt autoscaling khi vượt ngưỡng.
+- Đặt cảnh báo cho lỗi, độ trễ cao, hoặc chi phí bất thường.
+- Kết hợp với Lambda để xử lý sự kiện real-time.
+
+### CloudFormation
+- Cho phép bạn định nghĩa và triển khai hạ tầng AWS như EC2, S3, VPC, RDS... thông qua file cấu hình (template) dạng YAML hoặc JSON.
+- **Template**: là bản mô tả đầy đủ các tài nguyên cần triển khai.
+- **Stack**: là một đơn vị triển khai của template – khi bạn deploy template, CloudFormation sẽ tạo một stack gồm tất cả resource được khai báo.
+- **Change Sets**: CloudFormation tự động phân tích sự khác biệt giữa template mới và stack hiện tại, để quyết định cần tạo, cập nhật, hay xóa resource nào.
+- **Outputs**: cho phép xuất các giá trị (ID, ARN, URL) để các stack khác hoặc dịch vụ khác có thể sử dụng.
+- **Lợi ích chính**:
+  + Triển khai hạ tầng nhất quán và lặp lại
+  + Quản lý thay đổi rõ ràng
+  + Rollback khi deploy lỗi
+  + Tự động hóa CI/CD
+- Khi nào nên dùng AWS CloudFormation?
+| Tình huống | Lý do |
+|-----------|-------|
+| muốn **quản lý hạ tầng như code (IaC)** | Dễ kiểm soát, lưu Git, kiểm tra thay đổi |
+| cần **tái sử dụng hoặc triển khai lặp lại nhiều lần** | Viết 1 template → deploy ở nhiều region/account |
+| triển khai **ứng dụng có nhiều dịch vụ liên kết** | Kiểm soát thứ tự tạo resource (VPC → EC2 → ELB...) |
+| cần **CI/CD cho hạ tầng** | Kết hợp với CodePipeline để tự động triển khai |
+| muốn **rollback khi deploy lỗi** | CloudFormation hỗ trợ rollback stack khi có lỗi |
+- Ví dụ thực tế:
+  + Tạo 1 file template để triển khai:
+    - VPC + Subnet
+    - ECS Cluster + Task
+    - Application Load Balancer
+    - IAM Role
+    - Auto Scaling Group  
+    → Sau đó chỉ cần đổi biến là có thể triển khai cho dev/test/prod.
+- **Best Practices**:
+  + Sử dụng **modular templates** (nested stacks)
+  + Sử dụng **Parameters**, **Mappings**, **Conditions**, và **Outputs** hợp lý và để tái sử dụng
+  + Kiểm tra thay đổi bằng **Change Sets** trước khi apply
+  + Gắn tag cho tài nguyên để dễ quản lý chi phí
+  
+### ELB (Elastic Load Balancer)
+- Dịch vụ cân bằng tải giúp phân phối lưu lượng đến các compute resource.
+- Có 4 loại ELB:
+  + Classic (CLB): Đã cũ, không còn dùng nhiều.
+  + Application (ALB): Layer 7, định tuyến dựa vào nội dung HTTP/HTTPS (VD: path, host).
+  + Network (NLB): Layer 4, định tuyến theo IP/port.
+  + Gateway (GLB): Layer 3/4, dùng trước firewall hoặc NAT Gateway.
+- Cân bằng tải giúp tăng độ sẵn sàng (high availability) bằng cách chuyển request đến các healthy targets, có thể nằm ở nhiều AZ khác nhau.
+- Có 2 chế độ:
+  + Internet-facing: Có IP công cộng, dùng cho người dùng ngoài.
+  + Internal-only: Chỉ dùng trong VPC nội bộ, không public IP.
+- Best practice:
+  + Dùng ALB cho ứng dụng web (HTTP).
+  + Dùng NLB cho TCP/UDP cần độ trễ thấp, như IoT hoặc game server.
+
+### SNS (Simple Notification Service)
+- Dịch vụ gửi thông báo được quản lý hoàn toàn, theo mô hình publish/subscribe.
+- Chủ đề (topic): Nơi gửi thông báo.
+- Người đăng ký (subscriber): Nhận thông báo từ chủ đề (VD: email, Lambda, SQS).
+- Có hai loại:
+  + Standard: Không đảm bảo thứ tự.
+  + FIFO: Đảm bảo thứ tự và loại bỏ trùng lặp.
+- Có thể lưu trữ thông điệp bằng cách chuyển đến Kinesis Firehose rồi đưa vào S3 hoặc Redshift để phân tích.
 
 
-
-
+### Amazon SQS (Simple Queue Service)
 
