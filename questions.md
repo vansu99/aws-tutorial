@@ -209,14 +209,13 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
           + Min/Max/Desired capacity: ví dụ set desired = 6
           + Recurrence: ví dụ 0 8 * * * (theo cron expression)
         + Có thể tạo thêm 1 hành động để scale down vào 22:00 với desired = 1
-    + Ví dụ thực tế 2:
+    + Ví dụ thực tế 2 dùng Scaling based on a schedule:
       + Hệ thống đặt hàng online:
         + Giờ cao điểm là từ 9:00 đến 22:00
         + Bạn đặt lịch:
           + 09:00: Scale lên 8 instance
           + 22:00: Scale xuống 2 instance
         + Không cần đợi CloudWatch metric phản hồi
-   
 
 ### Route 53
 - Route 53 là một dịch vụ quản lý tên miền (DNS) được AWS quản lý hoàn toàn, cho phép bạn định tuyến người dùng đến các tài nguyên trên AWS hoặc bên ngoài AWS một cách nhanh chóng và đáng tin cậy.
