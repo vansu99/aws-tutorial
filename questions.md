@@ -437,6 +437,18 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
 | **Storage**          | CloudWatch Logs (retention configurable)| S3 bucket (infinite retention possible) |
 
 
+### GuardDuty
+- là một dịch vụ phát hiện mối đe dọa (threat detection) chứ không phải dịch vụ kiểm tra hoặc lọc lưu lượng mạng (traffic inspection/filtering).
+- GuardDuty giống như camera an ninh (phát hiện kẻ đột nhập) → Báo cho bạn biết để xử lý.
+- Khi phát hiện nguy cơ, nó gửi cảnh báo (alert) qua AWS Console hoặc Amazon EventBridge để bạn xử lý.
+- Bạn cần dùng kết hợp GuardDuty với các dịch vụ khác (như AWS WAF, Shield, Network ACL) để vừa phát hiện vừa ngăn chặn mối đe dọa.
+- GuardDuty KHÔNG làm gì?
+  + Không chặn lưu lượng xấu (như tường lửa - Firewall).
+  + Không kiểm tra từng gói tin (như IDS/IPS).
+  + Không tự động ngăn tấn công (bạn cần kết hợp với AWS WAF, Shield, hoặc NACL để chặn).
+  
+
+
 
 
 
