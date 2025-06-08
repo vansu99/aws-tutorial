@@ -310,6 +310,10 @@ Lợi ích: Giảm thiểu công việc vận hành, dễ dàng đáp ứng các
   + Role: Vai trò có thể được assume bởi user/dịch vụ để có quyền tạm thời.
 - Mặc định mọi hành động đều bị từ chối, cần cho phép cụ thể trong policy.
 - Explicit deny (từ chối rõ ràng) sẽ ưu tiên hơn allow.
+- IAM Policy → Định nghĩa quyền, nhưng phải gắn vào User/Group/Role.
+- IAM Group → Nhóm Users, không gắn trực tiếp vào EC2. Muốn cấp quyền thì phải gắn Policy vào Group.
+- IAM User → Dành cho người/dịch vụ, không dành cho EC2.
+- Cách đúng để cấp quyền cho EC2 instance? → IAM Role
 - Best practice:
   + Dùng policy nguyên tắc “least privilege” – chỉ cấp đúng quyền cần thiết.
   + Gắn role vào EC2 hoặc Lambda thay vì dùng access key thủ công.
