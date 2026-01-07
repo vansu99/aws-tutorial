@@ -1,4 +1,4 @@
-# Hóa Đơn AWS Config Đột Ngột Tăng Vọt? Bạn Không Cô Đơn Đâu! Hướng Dẫn Tối Ưu Chi Phí Dễ Hiểu
+# Hóa Đơn AWS Config Đột Ngột Tăng Vọt? Hướng Dẫn Tối Ưu Chi Phí Dễ Hiểu
 
 Bạn đang dùng AWS mà thấy hóa đơn **AWS Config** tháng này cao bất thường? Đừng lo, nhiều đội ngũ khác cũng từng gặp tình trạng này. AWS Config là công cụ quan trọng giúp giám sát và đảm bảo tuân thủ (compliance) cho tài nguyên cloud, nhưng mô hình tính phí của nó dễ khiến chi phí "bùng nổ" nếu không quản lý tốt.
 
