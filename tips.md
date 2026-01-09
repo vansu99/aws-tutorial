@@ -18,3 +18,8 @@
 18. Đề bài nhắc đến DB có khả năng linh hoạt đáp ứng thay đổi schema (rapidly evolve schema) thì sẽ nghĩ đến DynamoDB
 19. Phân tích thái độ người dùng (sentiment analysis) thì thường nghĩ ngay đến Comprehend
 20. Các bài toán cần tăng tốc kết nối đến hệ thống thì thường nghĩ đến Global Accelerator
+21. Cần solution về storage cho phía on-premise cho phép kết nối và đồng bộ lên s3 thì sẽ nghĩ đến S3 File Gateway
+
+
+
+
