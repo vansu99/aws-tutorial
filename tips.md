@@ -19,6 +19,8 @@
 19. Phân tích thái độ người dùng (sentiment analysis) thì thường nghĩ ngay đến Comprehend
 20. Các bài toán cần tăng tốc kết nối đến hệ thống thì thường nghĩ đến Global Accelerator
 21. Cần solution về storage cho phía on-premise cho phép kết nối và đồng bộ lên s3 thì sẽ nghĩ đến S3 File Gateway
+22. Cho phép application trong VPC access đến các service khác một cách an toàn, không đi qua internet thì nghĩ đến VPC Endpoint
+23. DB dạng quan hệ có khả năng tự scale để đáp ứng traffic thì nghĩ đến Aurora Serverless
 
 
 
