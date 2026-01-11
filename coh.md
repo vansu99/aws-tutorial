@@ -1,4 +1,8 @@
-<img width="1300" height="869" alt="image" src="https://github.com/user-attachments/assets/8465828c-e629-4c16-9995-7eb2c7a0c88a" /># AWS Cost Optimization Hub – Tối ưu chi phí AWS không còn là “nên làm”, mà là “bắt buộc”
+# AWS Cost Optimization Hub
+
+<img width="1300" height="869" alt="image" src="https://github.com/user-attachments/assets/8465828c-e629-4c16-9995-7eb2c7a0c88a" />
+
+# AWS Cost Optimization Hub – Tối ưu chi phí AWS không còn là “nên làm”, mà là “bắt buộc”
 
 Theo **FinOps Foundation – State of FinOps Report 2025**, hơn **50% trong 861 doanh nghiệp** được khảo sát cho biết:
 
