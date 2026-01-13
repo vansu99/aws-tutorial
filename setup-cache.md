@@ -110,6 +110,8 @@ Cookies: None
 Query strings: None
 ```
 
+<img width="1852" height="206" alt="image" src="https://github.com/user-attachments/assets/9aaf7ee1-3103-4875-bf00-2f09ce6ca4bb" />
+
 > Cache key càng nhỏ → cache hit càng cao.
 
 ---
@@ -121,6 +123,8 @@ Minimum TTL: 0
 Default TTL: 86400
 Maximum TTL: 31536000
 ```
+
+<img width="1846" height="633" alt="image" src="https://github.com/user-attachments/assets/b0c62613-f85a-48a2-a6af-dcdf00290edf" />
 
 ---
 
