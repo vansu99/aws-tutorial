@@ -21,7 +21,10 @@
 21. Cần solution về storage cho phía on-premise cho phép kết nối và đồng bộ lên s3 thì sẽ nghĩ đến S3 File Gateway
 22. Cho phép application trong VPC access đến các service khác một cách an toàn, không đi qua internet thì nghĩ đến VPC Endpoint
 23. DB dạng quan hệ có khả năng tự scale để đáp ứng traffic thì nghĩ đến Aurora Serverless
-
+24. Company phát triển application với HTTP API trong API Gateway. Chỉ muốn cho phép truy cập từ danh sách IP giới hạn (limited set of trusted IP addresses) thuộc mạng nội bộ công ty (company's internal network). Create a resource policy for the API that denies access to any IP address that is not specifically allowed. Resource Policy cũng là một cách không mất tiền để định nghĩa quyền kiểm soát truy cập API Gateway theo IP. Policy có thể định nghĩa chính xác các IP được phép và từ chối tất cả IP khác. Đây là best practice cho IP whitelisting trong API Gateway.
+25. API Gateway không sử dụng security groups như EC2. Security groups không áp dụng cho managed services như API Gateway.
+26. Private integration chỉ là cơ chế cho phép API Gateway kết nối với backend services trong VPC, không liên quan đến việc kiểm soát client access theo IP.
+27. 
 
 
 
