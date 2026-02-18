@@ -118,3 +118,136 @@ alias dlog="docker compose logs -f"
 
 Gõ `up` là xong, tiết kiệm cả năm 😄
 
+
+### Init source mới — làm theo thứ tự này
+
+Bước 1 — Tạo `Dockerfile`
+
+Định nghĩa image của app bạn trông như thế nào.
+
+```
+# Ví dụ Node.js
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+```
+
+Bước 2 — Tạo `docker-compose.yml`
+
+Định nghĩa toàn bộ stack — app + db + redis + bất cứ thứ gì cần.
+
+```
+version: '3.8'
+
+services:
+  api:
+    build: .                    # build từ Dockerfile ở thư mục hiện tại
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app                  # hot reload — map code local vào container
+      - /app/node_modules       # giữ node_modules của container, không bị override
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine   # dùng image có sẵn, không cần Dockerfile
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=myapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # persist data
+
+volumes:
+  postgres_data:
+```
+
+---
+
+### Bước 3 — Tạo `.dockerignore`
+
+Tránh copy rác vào image, **giống `.gitignore`**.
+```
+node_modules
+.git
+.env
+dist
+build
+*.log
+```
+
+Bước 4 — Tạo `.env`
+
+Tách config ra khỏi code, không commit file này lên git.
+
+```
+DB_HOST=db
+DB_PORT=5432
+DB_USER=admin
+DB_PASSWORD=secret
+DB_NAME=myapp
+```
+
+Rồi reference trong `docker-compose.yml`:
+
+```
+environment:
+  - DB_HOST=${DB_HOST}
+  - DB_PASSWORD=${DB_PASSWORD}
+```
+
+***Bước 5 — Build và chạy lần đầu***
+
+```
+# Lần đầu tiên — phải build image
+docker compose up -d --build
+
+# Kiểm tra các container đã chạy chưa
+docker compose ps
+
+# Xem log nếu có lỗi
+docker compose logs -f
+```
+
+---
+
+## Cấu trúc file sau khi xong
+```
+my-project/
+├── src/
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── .env                  # không commit
+├── .env.example          # commit cái này — để người khác biết cần những biến gì
+├── .gitignore
+└── package.json
+```
+
+---
+
+## Checklist nhanh
+```
+✅ Dockerfile       — build image app
+✅ docker-compose   — kết nối các services
+✅ .dockerignore    — loại file rác khỏi image
+✅ .env             — config môi trường (không commit)
+✅ .env.example     — template cho teammate (có commit)
+✅ docker compose up -d --build  — chạy lần đầu
+```
+
+Tip: Sau khi init xong, commit ngay `Dockerfile`, `docker-compose.yml`, `.dockerignore`, `.env.example` — để teammate clone về chỉ cần cp `.env.example` `.env` rồi `docker compose up -d --build` là chạy được ngay, không cần setup gì thêm.
+
