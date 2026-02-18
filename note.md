@@ -504,3 +504,101 @@ Nếu chỉ làm được một thứ từ danh sách trên, hãy làm cái này
 
 Nó buộc bạn phải suy nghĩ lại toàn bộ feature một lần nữa, tự phát hiện thêm vấn đề — và nó thể hiện với cả team rằng bạn hiểu sâu về feature của mình.
 
+
+## Quản Lý Task Khi Bị Overload
+
+Vấn đề của bạn không phải là "làm việc chậm" hay "thiếu kỹ năng" — mà là đang nhận nhiều hơn capacity thực sự cho phép và chưa có cách communicate điều đó mà không nghe như từ chối.
+
+Hiểu đúng vấn đề trước
+
+Có 3 dạng overload khác nhau, cách giải quyết khác nhau:
+
+```
+Dạng 1 — Volume overload: Quá nhiều task cùng lúc
+Dạng 2 — Complexity overload: Task khó hơn estimate
+Dạng 3 — Context switching: Task quá đa dạng, liên tục bị ngắt
+```
+
+Hầu hết mọi người nghĩ mình bị Dạng 1, nhưng thực ra là cả 3 cộng lại. Và cái tốn thời gian ngầm nhất chính là context switching — mỗi lần chuyển task, não mất 15-20 phút để re-focus.
+
+***Phần 1 — Tự quản lý capacity của bản thân***
+
+***Bước 1: Biết capacity thực sự của mình***
+
+Developer thường estimate theo "giờ code" nhưng quên tính:
+
+```
+Thời gian thực trong 1 ngày làm việc:
+├── Meeting, sync: ~1-1.5h
+├── Review code của người khác: ~30-60 phút
+├── Reply slack/email, interrupt: ~45-60 phút
+├── Context switching giữa tasks: ~30-45 phút
+└── Thời gian thực sự deep work: ~3-4 giờ/ngày
+```
+
+Nếu bạn đang estimate task theo 8 tiếng thì đang sai từ đầu. Capacity thực tế của một developer là 3-4 giờ deep work mỗi ngày.
+
+Hãy track thực tế của bản thân trong 1 tuần để có con số chính xác.
+
+***Bước 2: Estimate có buffer***
+
+Phần lớn estimate sai vì chỉ tính "thời gian khi mọi thứ thuận lợi":
+
+```
+Estimate đúng = Thời gian code
+              + Thời gian viết test / tự QC
+              + Thời gian review & fix feedback
+              + Buffer 20-30% cho unexpected
+```
+
+Nếu task estimate 2 ngày mà không có buffer → thực tế là 2.5-3 ngày. Khi bị push 3 tasks như vậy cùng lúc → bạn đã overload trước khi bắt đầu.
+
+***Bước 3: Visualize workload của mình***
+
+Đừng để tasks trong đầu — não người không phải task manager tốt. Dùng một board đơn giản:
+
+```
+TODO          IN PROGRESS      BLOCKED       DONE
+─────────     ────────────     ────────      ────
+[Task A]      [Task B] ←───── depends on    [Task X]
+[Task C]        3 ngày         Task D        [Task Y]
+[Task D]
+```
+
+Khi sếp push task mới, bạn nhìn vào board và thấy ngay impact thay vì cảm giác mơ hồ "hình như đang bận".
+
+**Phần 2 — Communicate với sếp mà không từ chối**
+
+Đây là core của vấn đề. Lý do bạn không muốn từ chối task là vì bạn đang frame nó là "từ chối". Cần đổi frame.
+
+Bạn không từ chối task — bạn đang giúp sếp đưa ra quyết định ưu tiên có đầy đủ thông tin.
+
+Sếp push task nhiều không phải họ muốn bạn làm kém — họ thường không có visibility rõ ràng về workload thực tế của bạn.
+
+Công thức giao tiếp: "Yes, và đây là trade-off"
+
+```
+✅ "Được anh/chị, em nhận task này. 
+    Hiện tại em đang có [A], [B], [C].
+    Nếu ưu tiên task mới thì [B] sẽ bị delay đến [ngày X].
+    Anh/chị muốn em sắp xếp thứ tự thế nào?"
+```
+
+**Phần 3 — Tăng chất lượng trong điều kiện bị overload**
+
+Khi không thể giảm số lượng task, hãy làm thông minh hơn:
+
+Phân loại task theo impact trước khi làm
+
+Không phải task nào cũng cần chất lượng như nhau:
+
+```
+High impact + Deadline gấp  → Full effort, không compromise
+High impact + Deadline rộng → Làm kỹ, đúng quy trình  
+Low impact + Deadline gấp   → MVP, document trade-off
+Low impact + Deadline rộng  → Delegate hoặc minimal effort
+```
+
+Vấn đề là khi overload, bạn có xu hướng dùng cùng một mức effort cho tất cả — vừa mệt vừa không hiệu quả.
+
+
