@@ -554,6 +554,14 @@ make prod-logs
 
 > Những tình huống thực tế hay gặp nhất khi dùng Docker hàng ngày, kèm cách xử lý từng bước.
 
+Tổng cộng 13 usecase thực tế được đúc kết từ kinh nghiệm, chia thành các nhóm chính:
+
++ Hay gặp nhất hàng ngày — Usecase 1, 2, 3, 4: crash khi start, DB chưa ready, port conflict, code không nhận.
++ Debug và kiểm tra — Usecase 5, 8, 12: app không vào được, cách exec vào container, xem CPU/RAM.
++ Bảo trì — Usecase 6, 7: dọn disk khi đầy, tối ưu build cache để build nhanh hơn.
++ Môi trường phức tạp — Usecase 9, 10, 11: reset từng cấp độ, giữ data DB, nhiều project song song.
++ Nâng cao — Usecase 13: CI/CD build và push image lên registry.
+
 ---
 
 ### Usecase 1 — Container khởi động nhưng app bị crash ngay
