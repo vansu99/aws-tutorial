@@ -549,3 +549,451 @@ make prod-logs
 ✅ Chạy đúng make command cho đúng môi trường
 ✅ docker compose ps — tất cả services đang healthy
 ```
+
+## Docker — Xử Lý Các Usecase Thực Tế
+
+> Những tình huống thực tế hay gặp nhất khi dùng Docker hàng ngày, kèm cách xử lý từng bước.
+
+---
+
+### Usecase 1 — Container khởi động nhưng app bị crash ngay
+
+**Triệu chứng:**
+```bash
+docker compose ps
+# api    Exit 1
+```
+
+**Xử lý:**
+```bash
+# Xem log để biết lý do crash
+docker compose logs api
+
+# Xem log chi tiết hơn, 100 dòng cuối
+docker compose logs --tail=100 api
+
+# Nếu container restart liên tục
+docker compose logs -f api   # theo dõi realtime
+```
+
+**Nguyên nhân phổ biến:**
+
+```bash
+# 1. Thiếu biến môi trường
+Error: DATABASE_URL is required
+→ Kiểm tra .env, đảm bảo đã khai báo đủ biến
+
+# 2. App start trước khi DB ready
+Error: connect ECONNREFUSED 127.0.0.1:5432
+→ Thêm depends_on + healthcheck (xem Usecase 2)
+
+# 3. Port bị chiếm
+Error: bind: address already in use
+→ Xem Usecase 3
+```
+
+---
+
+### Usecase 2 — App crash vì connect DB quá sớm
+
+**Triệu chứng:**
+```
+api_1  | Error: connect ECONNREFUSED db:5432
+api_1  | App exited with code 1
+```
+
+**Nguyên nhân:** `depends_on` chỉ đảm bảo container DB **start**, không đảm bảo Postgres **sẵn sàng nhận connection**.
+
+**Xử lý — thêm healthcheck:**
+```yaml
+services:
+  api:
+    depends_on:
+      db:
+        condition: service_healthy   # chờ DB healthy thật sự
+
+  db:
+    image: postgres:15-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+```
+
+**Kiểm tra health status:**
+```bash
+docker compose ps
+# NAME     STATUS
+# db       healthy      ← phải là healthy, không phải starting
+# api      running
+```
+
+---
+
+### Usecase 3 — Port bị conflict
+
+**Triệu chứng:**
+```
+Error: bind: address already in use 0.0.0.0:5432
+```
+
+**Xử lý:**
+```bash
+# Tìm process đang dùng port
+lsof -i :5432
+# hoặc
+sudo ss -tulpn | grep 5432
+
+# Kill process đó
+kill -9 <PID>
+
+# Hoặc đổi port mapping trong docker-compose.dev.yml
+ports:
+  - "5433:5432"   # map sang port khác trên host
+```
+
+**Tip — hay gặp nhất:**
+```bash
+# Postgres local đang chạy song song với container
+# → Tắt postgres local đi
+sudo service postgresql stop      # Linux
+brew services stop postgresql     # macOS
+```
+
+---
+
+### Usecase 4 — Thay đổi code nhưng container không nhận
+
+**Triệu chứng:** Sửa code nhưng app vẫn chạy code cũ.
+
+**Xử lý:**
+
+```bash
+# Trường hợp 1: Dùng volumes hot reload nhưng không hoạt động
+# → Kiểm tra volumes trong docker-compose.dev.yml
+volumes:
+  - .:/app              # map toàn bộ thư mục hiện tại
+  - /app/node_modules   # PHẢI có dòng này
+
+# Trường hợp 2: Thêm package mới không nhận
+npm install axios
+docker compose up -d --build   # bắt buộc --build khi đổi dependencies
+
+# Trường hợp 3: Thay đổi Dockerfile không nhận
+docker compose up -d --build   # rebuild image
+
+# Trường hợp 4: Vẫn không nhận sau --build (cache cũ)
+docker compose build --no-cache api
+docker compose up -d
+```
+
+---
+
+### Usecase 5 — Container chạy nhưng không vào được app
+
+**Triệu chứng:** Container status `running` nhưng `localhost:3000` không load.
+
+**Xử lý từng bước:**
+
+```bash
+# Bước 1: Kiểm tra container có thật sự running không
+docker compose ps
+
+# Bước 2: Kiểm tra port có được map đúng không
+docker compose ps
+# PORTS: 0.0.0.0:3000->3000/tcp  ← phải có dòng này
+
+# Bước 3: Vào trong container kiểm tra app có đang lắng nghe không
+docker compose exec api sh
+netstat -tlnp | grep 3000
+# hoặc
+curl localhost:3000
+
+# Bước 4: Kiểm tra app có bind đúng host không
+# ❌ Sai — chỉ lắng nghe localhost bên trong container
+app.listen(3000, 'localhost')
+
+# ✅ Đúng — lắng nghe tất cả interface
+app.listen(3000, '0.0.0.0')
+```
+
+---
+
+### Usecase 6 — Hết dung lượng ổ cứng vì Docker
+
+**Triệu chứng:**
+```
+No space left on device
+```
+
+**Xử lý:**
+```bash
+# Xem Docker đang chiếm bao nhiêu
+docker system df
+
+# Kết quả ví dụ:
+# TYPE            SIZE      RECLAIMABLE
+# Images          8.2GB     6.1GB (74%)
+# Containers      1.2GB     1.1GB (91%)
+# Volumes         4.5GB     0B
+# Build Cache     2.3GB     2.3GB
+
+# Dọn dẹp an toàn — chỉ xóa thứ không dùng
+docker system prune
+
+# Dọn dẹp mạnh hơn — xóa cả images không dùng
+docker system prune -a
+
+# Chỉ xóa build cache
+docker builder prune
+
+# Xóa images cũ (dangling)
+docker image prune
+
+# ⚠️ Xóa tất cả volumes không dùng — CẨN THẬN mất data
+docker volume prune
+```
+
+**Tip — setup tự dọn định kỳ:**
+```bash
+# Thêm vào crontab — chạy mỗi tuần
+0 2 * * 0 docker system prune -f
+```
+
+---
+
+### Usecase 7 — Build image chậm
+
+**Xử lý — tối ưu cache:**
+
+```dockerfile
+# ❌ Sai — COPY . . trước làm cache miss liên tục
+FROM node:20-alpine
+WORKDIR /app
+COPY . .
+RUN npm install    # layer này bị rebuild mỗi khi đổi bất kỳ file nào
+
+# ✅ Đúng — COPY package.json trước để cache npm install
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./    # chỉ copy file này
+RUN npm install          # layer này chỉ rebuild khi package.json thay đổi
+COPY . .                 # copy source code sau
+```
+
+```bash
+# Kiểm tra thời gian build từng bước
+docker build --progress=plain .
+
+# Build song song nhiều stage (BuildKit)
+DOCKER_BUILDKIT=1 docker compose build
+# hoặc thêm vào .env
+COMPOSE_DOCKER_CLI_BUILD=1
+DOCKER_BUILDKIT=1
+```
+
+---
+
+### Usecase 8 — Vào trong container để debug
+
+```bash
+# Vào container đang chạy
+docker compose exec api sh        # Alpine Linux dùng sh
+docker compose exec api bash      # Ubuntu/Debian dùng bash
+
+# Chạy lệnh mà không cần vào trong
+docker compose exec api node --version
+docker compose exec db psql -U admin -d myapp
+
+# Vào container đã stop (chạy container tạm)
+docker compose run --rm api sh
+
+# Xem thông tin chi tiết container
+docker compose inspect api
+```
+
+---
+
+### Usecase 9 — Reset môi trường khi bị lỗi lạ
+
+**Khi môi trường dev bị lỗi không rõ nguyên nhân**, làm theo thứ tự:
+
+```bash
+# Cấp độ 1 — Restart service
+docker compose restart api
+
+# Cấp độ 2 — Down và up lại
+docker compose down
+docker compose up -d
+
+# Cấp độ 3 — Rebuild image
+docker compose down
+docker compose up -d --build
+
+# Cấp độ 4 — Xóa sạch, reset hoàn toàn (mất data DB)
+docker compose down -v          # xóa cả volumes
+docker compose up -d --build
+
+# Cấp độ 5 — Xóa luôn image, build từ đầu
+docker compose down -v
+docker compose build --no-cache
+docker compose up -d
+```
+
+> **Rule:** Thử từng cấp độ, đừng nhảy thẳng lên cấp 5 — vừa mất thời gian vừa mất data.
+
+---
+
+### Usecase 10 — Database mất data sau khi down
+
+**Triệu chứng:** Chạy `docker compose down` xong up lại thì DB trống.
+
+**Nguyên nhân:** Quên khai báo volume cho DB.
+
+```yaml
+# ❌ Không có volume → data mất khi container bị xóa
+db:
+  image: postgres:15-alpine
+
+# ✅ Có named volume → data persist
+db:
+  image: postgres:15-alpine
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:    # khai báo ở cuối file
+```
+
+**Backup DB trước khi làm gì đó nguy hiểm:**
+```bash
+# Backup
+docker compose exec db pg_dump -U admin myapp > backup.sql
+
+# Restore
+docker compose exec -T db psql -U admin myapp < backup.sql
+```
+
+---
+
+### Usecase 11 — Nhiều project dùng Docker cùng lúc bị conflict
+
+**Triệu chứng:** Project B up lên thì port của Project A bị chiếm.
+
+**Xử lý — mỗi project dùng port riêng:**
+
+```yaml
+# Project A — docker-compose.dev.yml
+services:
+  api:
+    ports:
+      - "3001:3000"
+  db:
+    ports:
+      - "5433:5432"
+```
+
+```yaml
+# Project B — docker-compose.dev.yml
+services:
+  api:
+    ports:
+      - "3002:3000"
+  db:
+    ports:
+      - "5434:5432"
+```
+
+**Hoặc đặt project name để tránh conflict network:**
+```bash
+docker compose -p project-a up -d
+docker compose -p project-b up -d
+```
+
+---
+
+### Usecase 12 — Xem resource usage (CPU, RAM)
+
+```bash
+# Xem realtime tất cả container
+docker stats
+
+# Xem 1 service cụ thể
+docker stats $(docker compose ps -q api)
+
+# Snapshot một lần, không realtime
+docker stats --no-stream
+```
+
+---
+
+### Usecase 13 — CI/CD build image và push lên registry
+
+```bash
+# Build với tag cụ thể
+docker build --target prod -t myapp:1.0.0 .
+docker build --target prod -t myapp:latest .
+
+# Push lên Docker Hub
+docker push myorg/myapp:1.0.0
+docker push myorg/myapp:latest
+
+# Pull về và chạy trên server
+docker pull myorg/myapp:1.0.0
+docker compose up -d
+```
+
+**docker-compose.prod.yml khi dùng image từ registry:**
+```yaml
+services:
+  api:
+    image: myorg/myapp:${APP_VERSION:-latest}   # không build trên server
+    # bỏ phần build đi
+```
+
+---
+
+### Cheat Sheet — Lệnh xử lý sự cố nhanh
+
+```bash
+# Xem trạng thái tất cả container
+docker compose ps
+
+# Xem log realtime
+docker compose logs -f [service]
+
+# Vào trong container debug
+docker compose exec [service] sh
+
+# Restart 1 service
+docker compose restart [service]
+
+# Rebuild 1 service cụ thể
+docker compose up -d --build [service]
+
+# Xem resource usage
+docker stats
+
+# Dọn dẹp Docker
+docker system prune -a
+
+# Reset hoàn toàn (⚠️ mất data)
+docker compose down -v && docker compose up -d --build
+```
+
+---
+
+### Bảng tóm tắt — Lỗi hay gặp
+
+| Lỗi | Nguyên nhân | Cách fix |
+|---|---|---|
+| `Exit 1` ngay khi start | Crash do thiếu env hoặc lỗi code | `docker compose logs api` |
+| `ECONNREFUSED db:5432` | App start trước DB ready | `depends_on` + `healthcheck` |
+| `address already in use` | Port bị chiếm | `lsof -i :PORT` rồi kill |
+| Sửa code không nhận | Thiếu volume hoặc thiếu `--build` | Kiểm tra volumes, thêm `--build` |
+| `No space left on device` | Docker chiếm đầy disk | `docker system prune -a` |
+| DB mất data sau `down` | Thiếu named volume | Thêm volume vào compose file |
+| Build chậm | Layer order sai, cache miss | Copy `package.json` trước `COPY . .` |
+| `localhost:3000` không load | App bind sai host | Đổi thành `0.0.0.0` |
+
