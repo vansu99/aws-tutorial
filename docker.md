@@ -119,32 +119,33 @@ alias dlog="docker compose logs -f"
 Gõ `up` là xong, tiết kiệm cả năm 😄
 
 
-## Hướng Dẫn Docker Init — Production Ready
+## Docker Setup — Dev / Staging / Production
 
-> Dành cho developer muốn setup Docker đúng cách ngay từ đầu, tránh các lỗi phổ biến khi đưa vào team hoặc production.
+> Một bộ config duy nhất, chạy được trên cả 3 môi trường.
 
 ---
 
-## Cấu trúc thư mục
+### Cấu trúc thư mục
 
 ```
 my-project/
 ├── src/
 ├── Dockerfile
-├── docker-compose.yml          # base config chung
-├── docker-compose.dev.yml      # override cho dev
-├── docker-compose.prod.yml     # override cho prod
+├── docker-compose.yml              # base — config chung
+├── docker-compose.dev.yml          # override dev
+├── docker-compose.staging.yml      # override staging
+├── docker-compose.prod.yml         # override production
 ├── .dockerignore
-├── .env                        # KHÔNG commit
-├── .env.example                # commit — template cho teammate
-└── .gitignore
+├── .env.example                    # commit
+├── .env                            # KHÔNG commit — dev local
+├── .env.staging                    # KHÔNG commit — staging server
+├── .env.prod                       # KHÔNG commit — production server
+└── Makefile                        # shortcut command
 ```
 
 ---
 
-### Bước 1 — Dockerfile (Multi-stage)
-
-Dùng **multi-stage build** để tách môi trường dev/prod, tránh image nặng và không an toàn.
+### Dockerfile
 
 ```dockerfile
 # ---- Stage 1: Cài dependencies ----
@@ -154,24 +155,41 @@ COPY package*.json ./
 RUN npm ci
 
 # ---- Stage 2: Development ----
+# Ưu tiên đơn giản, hot reload, không cần non-root user
 FROM node:20-alpine AS dev
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Tạo non-root user — tránh chạy với quyền root
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
-
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
-# ---- Stage 3: Production ----
-FROM node:20-alpine AS prod
+# ---- Stage 3: Builder (dùng chung cho staging + prod) ----
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
+
+# ---- Stage 4: Staging ----
+FROM node:20-alpine AS staging
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=deps /app/node_modules ./node_modules
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+
+# ---- Stage 5: Production ----
+FROM node:20-alpine AS prod
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+
+# Chỉ cài production dependencies — image nhỏ hơn
+COPY package*.json ./
+RUN npm ci --omit=dev
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
@@ -180,24 +198,17 @@ EXPOSE 3000
 CMD ["node", "dist/index.js"]
 ```
 
-**Tại sao multi-stage?**
-
-- Image production không chứa source code gốc, devDependencies, hay build tools
-- Mỗi stage độc lập — dễ cache, build nhanh hơn
-- Tách biệt rõ ràng giữa dev và prod
-
 ---
 
-### Bước 2 — docker-compose.yml (Base)
+### docker-compose.yml — Base
 
-File base chứa **config chung** cho cả dev lẫn prod.
+Config chung, **không chứa thứ gì đặc thù** cho từng môi trường.
 
 ```yaml
 services:
   api:
     build:
       context: .
-      target: dev             # mặc định build stage dev, prod sẽ override
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}
@@ -205,9 +216,12 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
+      - REDIS_URL=${REDIS_URL}
     depends_on:
       db:
-        condition: service_healthy  # chờ DB thực sự sẵn sàng, không chỉ started
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   db:
     image: postgres:15-alpine
@@ -223,43 +237,57 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   postgres_data:
+  redis_data:
 ```
-
-> **Lưu ý:** Không còn dùng `version: '3.8'` — Docker Compose v2 đã deprecated field này.
 
 ---
 
-### Bước 3 — docker-compose.dev.yml (Override Dev)
+### docker-compose.dev.yml
 
 ```yaml
 services:
   api:
     build:
-      target: dev
+      target: dev                     # dùng stage dev trong Dockerfile
     ports:
       - "3000:3000"
+      - "9229:9229"                   # Node.js debug port
     volumes:
-      - .:/app                   # hot reload — map code local vào container
-      - /app/node_modules        # giữ node_modules của container, không bị override
+      - .:/app                        # hot reload
+      - /app/node_modules             # giữ node_modules của container
     environment:
       - NODE_ENV=development
 
   db:
     ports:
-      - "5432:5432"              # expose port ra ngoài để dùng với DB client (TablePlus, DBeaver,...)
+      - "5432:5432"                   # expose để dùng với TablePlus / DBeaver
+
+  redis:
+    ports:
+      - "6379:6379"                   # expose để debug với redis-cli
 ```
 
 ---
 
-### Bước 4 — docker-compose.prod.yml (Override Prod)
+### docker-compose.staging.yml
 
 ```yaml
 services:
   api:
     build:
-      target: prod
+      target: staging                 # dùng stage staging trong Dockerfile
     ports:
       - "3000:3000"
     restart: unless-stopped
@@ -268,17 +296,58 @@ services:
         limits:
           cpus: "0.5"
           memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   db:
     restart: unless-stopped
-    # KHÔNG expose port 5432 ra ngoài trên production
+    # KHÔNG expose port ra ngoài
+
+  redis:
+    restart: unless-stopped
+    # KHÔNG expose port ra ngoài
 ```
 
 ---
 
-### Bước 5 — .dockerignore
+### docker-compose.prod.yml
 
-Tránh copy rác vào image — giảm build time và tăng bảo mật.
+```yaml
+services:
+  api:
+    build:
+      target: prod                    # dùng stage prod — image nhỏ nhất, bảo mật nhất
+    ports:
+      - "3000:3000"
+    restart: always
+    deploy:
+      replicas: 2                     # chạy 2 instance
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  db:
+    restart: always
+    # KHÔNG expose port ra ngoài
+
+  redis:
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD}  # bảo mật redis trên prod
+    # KHÔNG expose port ra ngoài
+```
+
+---
+
+### .dockerignore
 
 ```
 node_modules
@@ -292,13 +361,32 @@ coverage
 .DS_Store
 README.md
 docker-compose*.yml
+.github
 ```
 
 ---
 
-### Bước 6 — .env và .env.example
+### .env.example
 
-**.env** — không commit, chứa giá trị thật:
+```env
+# App
+NODE_ENV=
+
+# Database
+DB_HOST=db
+DB_PORT=5432
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+
+# Redis
+REDIS_URL=redis://redis:6379
+REDIS_PASSWORD=
+```
+
+---
+
+## .env — Dev local
 
 ```env
 NODE_ENV=development
@@ -306,122 +394,158 @@ NODE_ENV=development
 DB_HOST=db
 DB_PORT=5432
 DB_USER=admin
-DB_PASSWORD=supersecret
-DB_NAME=myapp
+DB_PASSWORD=dev_secret
+DB_NAME=myapp_dev
+
+REDIS_URL=redis://redis:6379
+REDIS_PASSWORD=
 ```
 
-**.env.example** — commit lên git, chứa template để teammate biết cần những biến gì:
+---
+
+## .env.staging
 
 ```env
-NODE_ENV=
+NODE_ENV=staging
 
-DB_HOST=
-DB_PORT=
-DB_USER=
-DB_PASSWORD=
-DB_NAME=
+DB_HOST=db
+DB_PORT=5432
+DB_USER=admin
+DB_PASSWORD=staging_strong_password
+DB_NAME=myapp_staging
+
+REDIS_URL=redis://redis:6379
+REDIS_PASSWORD=staging_redis_pass
 ```
 
 ---
 
-### Bước 7 — Chạy lần đầu
+## .env.prod
+
+```env
+NODE_ENV=production
+
+DB_HOST=db
+DB_PORT=5432
+DB_USER=admin
+DB_PASSWORD=prod_very_strong_password
+DB_NAME=myapp_prod
+
+REDIS_URL=redis://redis:6379
+REDIS_PASSWORD=prod_redis_strong_pass
+```
+
+---
+
+### Makefile — Shortcut command
+
+Tránh gõ lệnh dài, dễ nhầm môi trường.
+
+```makefile
+# ========== DEV ==========
+dev-up:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env up -d
+
+dev-up-build:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env up -d --build
+
+dev-down:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+
+dev-logs:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f
+
+dev-reset:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+
+# ========== STAGING ==========
+staging-up:
+	docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d --build
+
+staging-down:
+	docker compose -f docker-compose.yml -f docker-compose.staging.yml down
+
+staging-logs:
+	docker compose -f docker-compose.yml -f docker-compose.staging.yml logs -f
+
+# ========== PRODUCTION ==========
+prod-up:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+prod-down:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+
+prod-logs:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
+```
+
+---
+
+### Cách dùng
+
+### Dev
 
 ```bash
-# 1. Copy env
-cp .env.example .env
-# Sau đó điền giá trị vào .env
-
-# 2. Build và chạy môi trường dev
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
-
-# 3. Kiểm tra các container
-docker compose ps
-
-# 4. Xem log nếu có lỗi
-docker compose logs -f
-
-# 5. Xem log của 1 service cụ thể
-docker compose logs -f api
-```
-
----
-
-### Workflow hàng ngày
-
-```bash
-# Sáng — bật lên
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-
-# Thêm package mới — bắt buộc phải --build
-npm install axios
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
-
-# Debug realtime
-docker compose logs -f api
-
-# Restart 1 service mà không ảnh hưởng service khác
-docker compose restart nginx
-
-# Tối — tắt
-docker compose down
-```
-
----
-
-### Tip: Tạo alias để gõ nhanh hơn
-
-Thêm vào `.zshrc` hoặc `.bashrc`:
-
-```bash
-alias dc-dev="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
-alias dc-prod="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
-
-# Dùng
-dc-dev up -d
-dc-dev up -d --build
-dc-dev down
-dc-dev logs -f api
-```
-
----
-
-### Cheat sheet — Up / Down
-
-| Command | Containers | Network | Volumes | Dùng khi |
-|---|---|---|---|---|
-| `up -d` | Tạo + chạy | Tạo | Giữ | Bắt đầu làm việc |
-| `up -d --build` | Rebuild + chạy | Tạo | Giữ | Có thay đổi Dockerfile / dependencies |
-| `stop` | Dừng (giữ lại) | Giữ | Giữ | Tạm dừng nhanh |
-| `start` | Chạy lại | Giữ | Giữ | Tiếp tục sau `stop` |
-| `restart [service]` | Restart 1 service | Giữ | Giữ | Fix config 1 service |
-| `down` | Dừng + xóa | Xóa | Giữ | Kết thúc ngày làm việc |
-| `down -v` | Dừng + xóa | Xóa | **Xóa** | Reset hoàn toàn — ⚠️ mất data DB |
-
----
-
-### Checklist trước khi commit
-
-```
-✅ Dockerfile dùng multi-stage (dev + prod)
-✅ Dockerfile chạy non-root user
-✅ docker-compose.yml không có field version
-✅ depends_on dùng condition: service_healthy
-✅ .dockerignore đã có và đúng
-✅ .env không có trong .gitignore → thêm vào ngay
-✅ .env.example đã commit
-✅ Production không expose port DB ra ngoài
-✅ docker compose up -d --build chạy thành công
-```
-
----
-
-### Teammate clone về — chỉ cần 3 bước
-
-```bash
+# Clone repo lần đầu
 git clone <repo>
-cp .env.example .env        # điền các giá trị cần thiết
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+cp .env.example .env        # điền giá trị dev vào
+
+# Chạy
+make dev-up-build           # lần đầu hoặc khi có thay đổi Dockerfile/dependencies
+make dev-up                 # những lần sau
+
+# Debug
+make dev-logs
+
+# Reset sạch database
+make dev-reset
 ```
 
-> Không cần cài Node, Postgres, hay bất cứ thứ gì khác trên máy local.
+### Staging
 
+```bash
+# Trên staging server
+cp .env.example .env.staging   # điền giá trị staging vào
+make staging-up
+make staging-logs
+```
+
+### Production
+
+```bash
+# Trên production server
+cp .env.example .env.prod      # điền giá trị prod vào
+make prod-up
+make prod-logs
+```
+
+---
+
+### So sánh 3 môi trường
+
+| | Dev | Staging | Prod |
+|---|---|---|---|
+| Dockerfile stage | `dev` | `staging` | `prod` |
+| Non-root user | ❌ | ✅ | ✅ |
+| Hot reload | ✅ | ❌ | ❌ |
+| Expose DB port | ✅ | ❌ | ❌ |
+| Expose Redis port | ✅ | ❌ | ❌ |
+| Resource limits | ❌ | ✅ nhỏ | ✅ lớn hơn |
+| Replicas | 1 | 1 | 2+ |
+| restart policy | ❌ | `unless-stopped` | `always` |
+| Log rotation | ❌ | ✅ | ✅ |
+| Redis password | ❌ | ✅ | ✅ |
+
+---
+
+### Checklist trước khi deploy
+
+```
+✅ .env.staging / .env.prod không commit lên git
+✅ Tất cả .env.* đã có trong .gitignore
+✅ Staging test pass trước khi deploy prod
+✅ DB password đủ mạnh trên staging và prod
+✅ Không expose port DB / Redis trên staging và prod
+✅ Chạy đúng make command cho đúng môi trường
+✅ docker compose ps — tất cả services đang healthy
+```
