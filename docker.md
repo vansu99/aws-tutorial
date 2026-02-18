@@ -1,6 +1,6 @@
 # DOCKER
 
-### Cách dùng `docker compose up` và `docker compose down`
+## Cách dùng `docker compose up` và `docker compose down`
 
 Hiểu đơn giản thôi: up = bật, down = tắt + dọn dẹp
 
@@ -119,135 +119,309 @@ alias dlog="docker compose logs -f"
 Gõ `up` là xong, tiết kiệm cả năm 😄
 
 
-### Init source mới — làm theo thứ tự này
+## Hướng Dẫn Docker Init — Production Ready
 
-Bước 1 — Tạo `Dockerfile`
+> Dành cho developer muốn setup Docker đúng cách ngay từ đầu, tránh các lỗi phổ biến khi đưa vào team hoặc production.
 
-Định nghĩa image của app bạn trông như thế nào.
+---
+
+## Cấu trúc thư mục
 
 ```
-# Ví dụ Node.js
-FROM node:20-alpine
+my-project/
+├── src/
+├── Dockerfile
+├── docker-compose.yml          # base config chung
+├── docker-compose.dev.yml      # override cho dev
+├── docker-compose.prod.yml     # override cho prod
+├── .dockerignore
+├── .env                        # KHÔNG commit
+├── .env.example                # commit — template cho teammate
+└── .gitignore
+```
 
+---
+
+### Bước 1 — Dockerfile (Multi-stage)
+
+Dùng **multi-stage build** để tách môi trường dev/prod, tránh image nặng và không an toàn.
+
+```dockerfile
+# ---- Stage 1: Cài dependencies ----
+FROM node:20-alpine AS deps
 WORKDIR /app
-
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
+# ---- Stage 2: Development ----
+FROM node:20-alpine AS dev
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Tạo non-root user — tránh chạy với quyền root
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
 
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
+
+# ---- Stage 3: Production ----
+FROM node:20-alpine AS prod
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
 ```
 
-Bước 2 — Tạo `docker-compose.yml`
+**Tại sao multi-stage?**
 
-Định nghĩa toàn bộ stack — app + db + redis + bất cứ thứ gì cần.
+- Image production không chứa source code gốc, devDependencies, hay build tools
+- Mỗi stage độc lập — dễ cache, build nhanh hơn
+- Tách biệt rõ ràng giữa dev và prod
 
-```
-version: '3.8'
+---
 
+### Bước 2 — docker-compose.yml (Base)
+
+File base chứa **config chung** cho cả dev lẫn prod.
+
+```yaml
 services:
   api:
-    build: .                    # build từ Dockerfile ở thư mục hiện tại
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app                  # hot reload — map code local vào container
-      - /app/node_modules       # giữ node_modules của container, không bị override
+    build:
+      context: .
+      target: dev             # mặc định build stage dev, prod sẽ override
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # chờ DB thực sự sẵn sàng, không chỉ started
 
   db:
-    image: postgres:15-alpine   # dùng image có sẵn, không cần Dockerfile
-    ports:
-      - "5432:5432"
+    image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=myapp
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # persist data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
 ```
 
+> **Lưu ý:** Không còn dùng `version: '3.8'` — Docker Compose v2 đã deprecated field này.
+
 ---
 
-### Bước 3 — Tạo `.dockerignore`
+### Bước 3 — docker-compose.dev.yml (Override Dev)
 
-Tránh copy rác vào image, **giống `.gitignore`**.
+```yaml
+services:
+  api:
+    build:
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app                   # hot reload — map code local vào container
+      - /app/node_modules        # giữ node_modules của container, không bị override
+    environment:
+      - NODE_ENV=development
+
+  db:
+    ports:
+      - "5432:5432"              # expose port ra ngoài để dùng với DB client (TablePlus, DBeaver,...)
+```
+
+---
+
+### Bước 4 — docker-compose.prod.yml (Override Prod)
+
+```yaml
+services:
+  api:
+    build:
+      target: prod
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  db:
+    restart: unless-stopped
+    # KHÔNG expose port 5432 ra ngoài trên production
+```
+
+---
+
+### Bước 5 — .dockerignore
+
+Tránh copy rác vào image — giảm build time và tăng bảo mật.
+
 ```
 node_modules
 .git
 .env
+.env.*
 dist
 build
+coverage
 *.log
+.DS_Store
+README.md
+docker-compose*.yml
 ```
 
-Bước 4 — Tạo `.env`
+---
 
-Tách config ra khỏi code, không commit file này lên git.
+### Bước 6 — .env và .env.example
 
-```
+**.env** — không commit, chứa giá trị thật:
+
+```env
+NODE_ENV=development
+
 DB_HOST=db
 DB_PORT=5432
 DB_USER=admin
-DB_PASSWORD=secret
+DB_PASSWORD=supersecret
 DB_NAME=myapp
 ```
 
-Rồi reference trong `docker-compose.yml`:
+**.env.example** — commit lên git, chứa template để teammate biết cần những biến gì:
 
+```env
+NODE_ENV=
+
+DB_HOST=
+DB_PORT=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
 ```
-environment:
-  - DB_HOST=${DB_HOST}
-  - DB_PASSWORD=${DB_PASSWORD}
-```
 
-***Bước 5 — Build và chạy lần đầu***
+---
 
-```
-# Lần đầu tiên — phải build image
-docker compose up -d --build
+### Bước 7 — Chạy lần đầu
 
-# Kiểm tra các container đã chạy chưa
+```bash
+# 1. Copy env
+cp .env.example .env
+# Sau đó điền giá trị vào .env
+
+# 2. Build và chạy môi trường dev
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+# 3. Kiểm tra các container
 docker compose ps
 
-# Xem log nếu có lỗi
+# 4. Xem log nếu có lỗi
 docker compose logs -f
+
+# 5. Xem log của 1 service cụ thể
+docker compose logs -f api
 ```
 
 ---
 
-## Cấu trúc file sau khi xong
-```
-my-project/
-├── src/
-├── Dockerfile
-├── docker-compose.yml
-├── .dockerignore
-├── .env                  # không commit
-├── .env.example          # commit cái này — để người khác biết cần những biến gì
-├── .gitignore
-└── package.json
+### Workflow hàng ngày
+
+```bash
+# Sáng — bật lên
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# Thêm package mới — bắt buộc phải --build
+npm install axios
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+# Debug realtime
+docker compose logs -f api
+
+# Restart 1 service mà không ảnh hưởng service khác
+docker compose restart nginx
+
+# Tối — tắt
+docker compose down
 ```
 
 ---
 
-## Checklist nhanh
-```
-✅ Dockerfile       — build image app
-✅ docker-compose   — kết nối các services
-✅ .dockerignore    — loại file rác khỏi image
-✅ .env             — config môi trường (không commit)
-✅ .env.example     — template cho teammate (có commit)
-✅ docker compose up -d --build  — chạy lần đầu
+### Tip: Tạo alias để gõ nhanh hơn
+
+Thêm vào `.zshrc` hoặc `.bashrc`:
+
+```bash
+alias dc-dev="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
+alias dc-prod="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
+
+# Dùng
+dc-dev up -d
+dc-dev up -d --build
+dc-dev down
+dc-dev logs -f api
 ```
 
-Tip: Sau khi init xong, commit ngay `Dockerfile`, `docker-compose.yml`, `.dockerignore`, `.env.example` — để teammate clone về chỉ cần cp `.env.example` `.env` rồi `docker compose up -d --build` là chạy được ngay, không cần setup gì thêm.
+---
+
+### Cheat sheet — Up / Down
+
+| Command | Containers | Network | Volumes | Dùng khi |
+|---|---|---|---|---|
+| `up -d` | Tạo + chạy | Tạo | Giữ | Bắt đầu làm việc |
+| `up -d --build` | Rebuild + chạy | Tạo | Giữ | Có thay đổi Dockerfile / dependencies |
+| `stop` | Dừng (giữ lại) | Giữ | Giữ | Tạm dừng nhanh |
+| `start` | Chạy lại | Giữ | Giữ | Tiếp tục sau `stop` |
+| `restart [service]` | Restart 1 service | Giữ | Giữ | Fix config 1 service |
+| `down` | Dừng + xóa | Xóa | Giữ | Kết thúc ngày làm việc |
+| `down -v` | Dừng + xóa | Xóa | **Xóa** | Reset hoàn toàn — ⚠️ mất data DB |
+
+---
+
+### Checklist trước khi commit
+
+```
+✅ Dockerfile dùng multi-stage (dev + prod)
+✅ Dockerfile chạy non-root user
+✅ docker-compose.yml không có field version
+✅ depends_on dùng condition: service_healthy
+✅ .dockerignore đã có và đúng
+✅ .env không có trong .gitignore → thêm vào ngay
+✅ .env.example đã commit
+✅ Production không expose port DB ra ngoài
+✅ docker compose up -d --build chạy thành công
+```
+
+---
+
+### Teammate clone về — chỉ cần 3 bước
+
+```bash
+git clone <repo>
+cp .env.example .env        # điền các giá trị cần thiết
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+```
+
+> Không cần cài Node, Postgres, hay bất cứ thứ gì khác trên máy local.
 
