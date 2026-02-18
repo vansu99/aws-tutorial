@@ -1,6 +1,8 @@
-1. Thay "Best Practice" bằng "Right Trade-off". Không có giải pháp tốt nhất — chỉ có trade-off phù hợp với context. Khi ai đó đề xuất một giải pháp, đừng hỏi "cái này có phải best practice không?", hãy hỏi: Team có maintain được không? Nếu sai, recover mất bao lâu? Complexity cost là gì? (thêm Kafka vào có đáng không?)
+***Thay "Best Practice" bằng "Right Trade-off".***
 
-2.  Phân biệt rõ 3 chiều khi phân tích:
+Không có giải pháp tốt nhất — chỉ có trade-off phù hợp với context. Khi ai đó đề xuất một giải pháp, đừng hỏi "cái này có phải best practice không?", hãy hỏi: Team có maintain được không? Nếu sai, recover mất bao lâu? Complexity cost là gì? (thêm Kafka vào có đáng không?)
+
+Phân biệt rõ 3 chiều khi phân tích:
 ```   
 Correctness: System làm đúng không? Edge case nào bị bỏ qua?
 Scalability: Khi load x10, x100 — cái gì chết trước?
