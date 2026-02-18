@@ -37,3 +37,84 @@ Dùng khi:
 + Trước khi switch branch có thay đổi lớn về infrastructure
 
 ***Lưu ý: Dùng stop/start nếu muốn tạm dừng nhanh. Dùng down khi muốn "làm mới" hoàn toàn. Còn down -v thì cẩn thận — database sẽ bay màu.***
+
+### Thao tác dùng hàng ngày — theo thứ tự thực tế
+
+1. `docker compose up -d` + `docker compose down`
+
+Đây là cặp đôi dùng nhiều nhất, gần như mỗi ngày.
+
+```
+# Sáng vào làm
+git pull origin develop
+docker compose up -d
+
+# Tối về / hết giờ
+docker compose down
+```
+
+Lý do ***down*** thay vì ***stop***: giải phóng port, network sạch hơn, tránh conflict lần sau up lên.
+
+2. `docker compose up -d --build`
+
+Dùng khi có thay đổi dependencies hoặc Dockerfile.
+
+```
+# Vừa thêm thư viện mới
+npm install axios        # hoặc pip install requests
+docker compose up -d --build   # bắt buộc phải --build, không thì vẫn chạy image cũ
+```
+
+Hay bị quên cái này lắm — thêm package rồi chạy `up -d` thường thôi, ngồi debug mãi không ra tại sao code không nhận thư viện mới.
+
+3. `docker compose logs -f [service]`
+
+Không phải up/down nhưng dùng liên tục khi debug.
+
+```
+docker compose logs -f api       # xem log realtime của service "api"
+docker compose logs -f api db    # xem nhiều service cùng lúc
+docker compose logs --tail=50 api  # chỉ xem 50 dòng cuối
+```
+
+4. `docker compose restart [service]`
+
+Khi chỉ muốn restart 1 service cụ thể, không đụng cái khác.
+
+```
+# Config nginx thay đổi, chỉ cần restart nginx thôi
+docker compose restart nginx
+
+# Không cần down cả stack chỉ vì 1 service
+```
+
+***Workflow thực tế của 1 ngày làm việc***
+
+```
+# Sáng
+git pull
+docker compose up -d
+
+# Trong ngày — thêm package mới
+docker compose up -d --build
+
+# Trong ngày — đang debug, xem log
+docker compose logs -f api
+
+# Trong ngày — fix config 1 service
+docker compose restart nginx
+
+# Tối
+docker compose down
+```
+
+Tip thực tế: Tạo alias trong `.zshrc / .bashrc` cho nhanh:
+
+```
+alias up="docker compose up -d"
+alias down="docker compose down"
+alias dlog="docker compose logs -f"
+```
+
+Gõ `up` là xong, tiết kiệm cả năm 😄
+
