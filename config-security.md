@@ -21,3 +21,15 @@ EventBridge
    ↓
 SNS / Email / Slack
 ```
+
+### Setup S3 Lifecycle
+
+```
+Bucket: riêng cho AWS Config
+Versioning: không bật nếu không có yêu cầu đặc biệt
+Lifecycle:
+- 30 days  -> Standard-IA
+- 90 days  -> Glacier Flexible Retrieval
+- 365 days -> Glacier Deep Archive
+- Expire   -> chỉ bật khi retention policy đã rõ
+```
