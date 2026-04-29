@@ -59,7 +59,8 @@
 - remember to update route tables
 - no need to disable Source/Destination Checks
 - if you have resource in multiple AZs and they share one NAT gateway, if NAT Gateway's AZ is down, resources in the other AZs lose internet access. To create an AZ-independent architecture, create a NAT gateway in each AZ and configure your routing to ensure that resources use the NAT gateway in the same aZ
-
+- Gateway endpoint cho S3 là dịch vụ miễn phí, cho phép kết nối đến S3 với traffic đi trực tiếp trong đường truyền nội bộ của AWS, không qua internet. Muốn cho các resource trong private subnet truy cập đến S3 thì chỉ cần cập nhật route table để điều hướng traffic S3 qua endpoint.
+- 
 ## Network Access Control List (ACL)
 
 ### Ephemeral Port
