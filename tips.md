@@ -34,7 +34,19 @@
 34. Cần chặn một hành động (action) nào đó trong Organization thì sẽ nghĩ đến SCP
 35. Khi thấy từ khóa NFS trên AWS thì thường sẽ nghĩ đến EFS
 36. Fileshare cho Linux instance thì thường sẽ nghĩ đến EFS
-37. 
+37. Sử dụng S3 không biết trước tần suất, chỉ muốn tiết kiệm chi phí thì sẽ nghĩ đến Amazon S3 Intelligent-Tiering
+38. Amazon S3 Standard: Không tiết kiệm chi phí cho data ít được access, Giá cao nhất trong các S3 storage class
+39. Amazon S3 Glacier Deep Archive: Đây là tầng lưu trữ thiết kế để lưu data lâu dài, Không phù hợp với tần suất truy cập không biết trước
+40. Amazon S3 One Zone-IA: Không đáp ứng yêu cầu "highest durability" vì chỉ lưu data trong 1 AZ
+41. S3 chỉ giúp host static content, không thể host dynamic web application.
+
+
+
+
+
+
+
+
 
 
 
