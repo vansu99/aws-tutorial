@@ -32,6 +32,9 @@
 32. DynamoDB chỉ là service database, không có có cơ chế queue. Do đó vẫn có thể bị quá tải như thường.
 33. Cần bắt buộc việc gắn tag và gán giá trị cho tag trong Organization thì nghĩ đến Tag policy
 34. Cần chặn một hành động (action) nào đó trong Organization thì sẽ nghĩ đến SCP
+35. Khi thấy từ khóa NFS trên AWS thì thường sẽ nghĩ đến EFS
+36. Fileshare cho Linux instance thì thường sẽ nghĩ đến EFS
+37. 
 
 
 
