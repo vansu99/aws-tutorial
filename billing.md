@@ -33,5 +33,6 @@ Xem chi phí các tháng trước
 ## AWS Pricing Calculator
 
 Ước tính ban đầu (Calculator): 730hr
+
 Thực tế: 720hr (khi chạy 24/7)
 
