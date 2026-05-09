@@ -40,6 +40,7 @@
 40. Amazon S3 One Zone-IA: Không đáp ứng yêu cầu "highest durability" vì chỉ lưu data trong 1 AZ
 41. S3 chỉ giúp host static content, không thể host dynamic web application.
 42. Khi cần kết nối môi trường On-premise với nhiều AWS account thông qua DirectConnect thì nghĩ đến Transit Gateway
+43. DB dạng quan hệ có khả năng tự scale để đáp ứng traffic thì nghĩ đến Aurora Serverless
 
 
 
