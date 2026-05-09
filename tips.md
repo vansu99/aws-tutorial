@@ -39,6 +39,7 @@
 39. Amazon S3 Glacier Deep Archive: Đây là tầng lưu trữ thiết kế để lưu data lâu dài, Không phù hợp với tần suất truy cập không biết trước
 40. Amazon S3 One Zone-IA: Không đáp ứng yêu cầu "highest durability" vì chỉ lưu data trong 1 AZ
 41. S3 chỉ giúp host static content, không thể host dynamic web application.
+42. Khi cần kết nối môi trường On-premise với nhiều AWS account thông qua DirectConnect thì nghĩ đến Transit Gateway
 
 
 
