@@ -64,7 +64,18 @@
 64. Athena là dịch vụ serverless cho phép query data trực tiếp trên S3. Vì là serverless nên sẽ thích hợp cho việc truy vấn occasional (không thường xuyên). Athena chỉ cần trả tiền theo lượng dữ liệu scan thực tế, không có chi phí cố định. Ngoài ra có performance cao tương thích với Parquet và có support mã hoá client CSE-KMS encryption.
 65. Việc query data trên S3 thỉnh thoảng, không thường xuyên thì nghĩ ngay đến Amazon Athena
 66. Đảm bảo được việc chỉ xử lý message đúng 1 lần duy nhất (exactly-once processing) thì nghĩ đến SQS FIFO
-67. 
+67. Cách lựa chọn các tầng lưu trữ cho S3:
+  + Truy cập nhiều, thường xuyên → Standard
+  + Ít truy cập + khi cần truy cập phải lấy được file ngay (immediate access) → Standard-IA (độ bền cao và đắt hơn) hoặc One Zone-IA (độ bền thấp nhưng rẻ)
+  + Tiết kiệm chi phí hơn nữa, chấp nhận việc phải chờ mới lấy được file → Glacier Family (Instant Retrieval, Flexible Retrieval, Deep Archive), trong đó:
+    + Trả phí để được lấy file ngay lập tức: Glacier Instant Retrieval
+    + Có thể đợi từ vài phút đến vài giờ: Glacier Flexible Retrieval
+    + Chỉ để lưu trữ lâu dài: Glacier Deep Archive
+  + Tần suất truy cập không cố định, không biết trước (Unknown access pattern) → Intelligent-Tiering
+69. "LEAST effort" + "backup" + "hundreds of instances" → AWS Backup
+70. "Centralized backup" → AWS Backup
+71. AWS Backup là lựa chọn hàng đầu cho việc quản lý backup tập trung.
+72. Khi đề bài nhấn mạnh "LEAST effort" với large-scale backup, ưu tiên managed services thay vì manual solutions
 
 
 
