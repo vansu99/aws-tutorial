@@ -41,6 +41,34 @@
 41. S3 chỉ giúp host static content, không thể host dynamic web application.
 42. Khi cần kết nối môi trường On-premise với nhiều AWS account thông qua DirectConnect thì nghĩ đến Transit Gateway
 43. DB dạng quan hệ có khả năng tự scale để đáp ứng traffic thì nghĩ đến Aurora Serverless
+44. Transfer Acceleration dùng cho việc tăng tốc upload trực tiếp lên S3
+45. S3 cần copy sang region khác thì nghĩ đến S3-cross region replication
+46. Inspector chỉ giúp phát hiện các lỗ hổng bảo mật (vulnerabilities) trong EC2 instances và container images, không có khả năng giám sát và phát hiện các hoạt động bất thường.
+47. Config chỉ giúp ghi lại lịch sử thay đổi setting của resource và đặt ra quy định để đảm bảo tuần thủ, không có khả năng giám sát và phát hiện các hoạt động bất thường.
+48. Phát hiện hoạt động bất thường, đáng ngờ "malicious" thì nghĩ đến GuardDuty
+49. Tổng hợp và quản lý các phát hiện security (security findings) thì nghĩ đến Security Hub
+50. Keyword "search, real-time update" thì thường sẽ nghĩ đến OpenSearch
+51. Keyword thời gian thực "real-time" thì thường sẽ nghĩ đến Kinesis Data Streams
+52. Keyword hiển thị hoá "visualization" thì thường sẽ nghĩ đến QuickSight
+53. "encrypt before storing" - tức là data phải được mã hóa trước khi gửi lên S3. Do đó sử dụng Client-side encryption để đảm bảo dữ liệu được mã hóa tại client trước khi upload.
+54. server-side encryption - data được mã hóa SAU KHI đã đến S3, không phải "before storing"
+55. Khi cần solution storage cho local mà support dạng block storage thì sẽ nghĩ đến Volume Gateway. Keyword: iSCSI, Block Storage, Volume
+56. Với lượng data hàng trăm TB hay hàng PB thì việc migrate hầu như sẽ thực hiện qua Snowball Edge
+57. WAF có thể hạn chế tấn công DDoS thông qua Rate-based rule
+58. Intelligent-Tiering chỉ tối ưu chi phí storage S3 dựa trên tần suất truy cập, không giải quyết vấn đề cross-region transfer cost.
+59. Nhiều RDS DB instances chạy trong development account. Tất cả instances đều có gắn tags để nhận diện (development resources). Muốn instance chỉ chạy theo lịch trong giờ hành chính => Dùng State Manager. Chỉ cần tạo association với schedule expression, chọn target bằng tags, và State Manager sẽ tự động thực hiện start/stop theo thời gian định sẵn. Ít operational overhead nhất vì không cần viết code Lambda hay setup monitoring phức tạp.
+60. Trusted Advisor là service đưa ra các gợi ý về mặt vận hành, security trong account, không có chức năng vận hành RDS theo lịch.
+61. Giảm thời gian failover cho RDS hoặc Aurora thì nghĩ đến RDS Proxy
+62. Chạy job mà cần tính ổn định, Cannot be interrupted thì sẽ tránh đáp án Spot Instances
+63. Auto Scaling Group cần scale tự động để đáp ứng traffic thì nghĩ đến target tracking scaling
+
+
+
+
+
+
+
+
 
 
 
