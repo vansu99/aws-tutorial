@@ -61,6 +61,10 @@
 61. Giảm thời gian failover cho RDS hoặc Aurora thì nghĩ đến RDS Proxy
 62. Chạy job mà cần tính ổn định, Cannot be interrupted thì sẽ tránh đáp án Spot Instances
 63. Auto Scaling Group cần scale tự động để đáp ứng traffic thì nghĩ đến target tracking scaling
+64. Athena là dịch vụ serverless cho phép query data trực tiếp trên S3. Vì là serverless nên sẽ thích hợp cho việc truy vấn occasional (không thường xuyên). Athena chỉ cần trả tiền theo lượng dữ liệu scan thực tế, không có chi phí cố định. Ngoài ra có performance cao tương thích với Parquet và có support mã hoá client CSE-KMS encryption.
+65. Việc query data trên S3 thỉnh thoảng, không thường xuyên thì nghĩ ngay đến Amazon Athena
+66. Đảm bảo được việc chỉ xử lý message đúng 1 lần duy nhất (exactly-once processing) thì nghĩ đến SQS FIFO
+67. 
 
 
 
