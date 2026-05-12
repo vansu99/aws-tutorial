@@ -88,8 +88,15 @@
 79. Networking inspection -> Thường nghĩ đến Gateway Load Balancer
 80. Multi-AZ RDS: đảm bảo database chạy trên 2 AZ, có failover tự động khi có sự cố, tăng tính khả dụng
 81. Đối với EC2 để multi-az thì sẽ sử dụng Auto Scaling Group để scale trên nhiều zone, có thể kết hợp cân bằng tải với ALB nếu cần thiết
-82. 
-
+82. "Cost breakdown by application" → Cost allocation tags + Cost Explorer
+83. Cost allocation tags cho phép quản lý và phân chia chi phí theo tag, và Cost Explorer cung cấp dashboard trực quan với khả năng tạo report, cập nhật thường xuyên tự động - tất cả đều hoàn toàn miễn phí.
+84. "Automatic key rotation" → KMS (chỉ KMS mới có automatic rotation)
+85. "Long-running workloads" → Reserved Instances/Savings Plans với cam kết sử dụng dài hạn
+86. Payment Options theo mức discount:
+  - All Upfront (discount cao nhất)
+  - Partial Upfront (discount trung bình)
+  - No Upfront (discount thấp nhất)
+87. 
 
 
 
