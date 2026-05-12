@@ -76,9 +76,19 @@
 70. "Centralized backup" → AWS Backup
 71. AWS Backup là lựa chọn hàng đầu cho việc quản lý backup tập trung.
 72. Khi đề bài nhấn mạnh "LEAST effort" với large-scale backup, ưu tiên managed services thay vì manual solutions
-
-
-
+73. "Database credentials" + "rotation" → AWS Secrets Manager.
+74. "Encryption + on-premises to VPC" → Site-to-Site VPN (có IPSec encryption tự động)
+75. Transit Gateway chủ yếu để kết nối nhiều VPC hoặc on-premises networks, không tạo private connection với third-party SaaS.
+76. "Third-party SaaS + private connectivity" → AWS PrivateLink.
+77. Kiến trúc tham khảo về luồng kết nối từ Lambda đến RDS
+    - Lambda request vào Secrets Manager để lấy thông tin đăng nhập DB
+    - Lambda connect vào DB
+    - RDS có liên kết trực tiếp với Secrets Manager để rotation định kì
+78. Khi đề bài yêu cầu traffic cân bằng tải trên một nhóm replica cụ thể → nghĩ đến Custom Endpoint
+79. Networking inspection -> Thường nghĩ đến Gateway Load Balancer
+80. Multi-AZ RDS: đảm bảo database chạy trên 2 AZ, có failover tự động khi có sự cố, tăng tính khả dụng
+81. Đối với EC2 để multi-az thì sẽ sử dụng Auto Scaling Group để scale trên nhiều zone, có thể kết hợp cân bằng tải với ALB nếu cần thiết
+82. 
 
 
 
