@@ -96,7 +96,30 @@
   - All Upfront (discount cao nhất)
   - Partial Upfront (discount trung bình)
   - No Upfront (discount thấp nhất)
-87. 
+87. "Millions of objects" → Nghĩ đến S3 Batch Operations (thao tác hàng loạt)
+88. "Each time upload" → S3 Event Notification (real-time trigger)
+89. "Performance analysis" → Câu hỏi về performance analysis nên sẽ cần metrics (CloudWatch Metrics), không phải CloudWatch Logs
+90. "Granularity 1-2 minutes" → CloudWatch Detailed Monitoring (1-minute intervals)
+91. Keyword "Reports" → Nghĩ đến Read replica
+92. Read-heavy workload gây chậm → Read replica là giải pháp đầu tiên
+93. "Accidentally deleted" + "Prevent data loss" → Nghĩ đến Recycle Bin
+94. "TCP/UDP traffic" → chỉ có Network Load Balancer & AWS Global Accelerator
+95. "TCP/UDP traffic" → Loại hết các đáp án có ALB, API GW, CloudFront vì chỉ không support TCP/UDP
+96. "Granular control + same bucket + different prefixes" → S3 Access Points
+97. "Restrict application to specific prefix" → Access Point Policies
+98. "Third-party CA" → phải import certificate vào ACM (không thể tạo và sign trực tiếp)
+99. ECS Fargate là lựa chọn phù hợp cho việc chạy job trong thời gian dài vì có tính ổn định, trong quá trình chạy sẽ không bị gián đoạn.
+100. Đối với các câu hỏi về việc chạy job thì các solution thường nghĩ đến đó là AWS Lambda, ECS Fargate, Batch, EC2 Spot Instances.
+101. Đầu tiên cần xem thời gian chạy job là bao lâu, nếu trên 15 phút sẽ loại ngay Lambda, ưu tiên chọn các solution managed, serverless như ECS Fargate, Batch.
+102. "Aurora" + "DR" → nghĩ đến Aurora Global Database
+103. 
+
+
+
+
+
+
+
 
 
 
