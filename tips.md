@@ -143,8 +143,14 @@
 128. ".csv files" + "SQL queries" → Glue crawler + Athena
 129. "SAP" + "high memory utilization" → Memory optimized instances
 130. "SQL Server database" + "high memory" → Memory optimized instances
-
-
+131. "Aurora scaling" → Aurora Read Replicas là standard solution
+132. DAX only works với DynamoDB, không phải Aurora
+133. Redshift = analytics/data warehouse, không phải operational reads
+134. "Write performance degradation" + "read traffic" → Read replicas
+135. "Daily backup" + "RDS" → RDS automated backups (đã có sẵn daily)
+136. "Retention period" → Modify RDS backup retention setting
+137. RDS automated backups default enabled với configurable retention (1-35 days)
+138. 
 
 
 
