@@ -150,7 +150,16 @@
 135. "Daily backup" + "RDS" → RDS automated backups (đã có sẵn daily)
 136. "Retention period" → Modify RDS backup retention setting
 137. RDS automated backups default enabled với configurable retention (1-35 days)
-138. 
+138. "HPC workload" + "low latency" + "high throughput" → Cluster placement groups
+139. Spot instances = cost optimization, không phải performance optimization
+140. "External consultant" + "temporary access" → Presigned URLs
+141. "CloudFront" + "SSL certificate" → ACM certificate trong us-east-1
+142. "Public certificate" = free từ ACM
+143. "Threat detection" + "suspicious behavior" → Amazon GuardDuty
+144. "Automated response" + "WAF rules" → EventBridge + Lambda integration
+145. "Shared storage" + "multiple EC2 instances" → Amazon EFS
+146. "Holiday each year" → Recurring scheduled actions
+
 
 
 
