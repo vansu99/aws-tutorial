@@ -112,7 +112,42 @@
 100. Đối với các câu hỏi về việc chạy job thì các solution thường nghĩ đến đó là AWS Lambda, ECS Fargate, Batch, EC2 Spot Instances.
 101. Đầu tiên cần xem thời gian chạy job là bao lâu, nếu trên 15 phút sẽ loại ngay Lambda, ưu tiên chọn các solution managed, serverless như ECS Fargate, Batch.
 102. "Aurora" + "DR" → nghĩ đến Aurora Global Database
-103. 
+103. Best Practice cho Static Website:
+    Dùng Cache-Control max-age dài để tối ưu bandwidth
+    Kết hợp CloudFront invalidation khi deployment để đảm bảo fresh content
+    Tránh TTL = 0 vì mất lợi ích caching
+104. Cost and Usage Report → S3 → Athena → QuickSight
+105. "Peak usage + timeouts" → Caching (ElastiCache) + Decoupling (SQS)
+106. "Scale cost-effectively" → Auto Scaling + managed services
+107. "Application timeouts" → Database bottleneck → cần caching + async processing
+108. "DDoS attacks" → AWS Shield
+109. "Layer 7 attacks" → WAF
+110. "Layer 3/4 attacks" → Shield
+111. "Low traffic" + "cost-effective" → Serverless (Lambda + API Gateway)
+112. "Cost-effectively" + "High Availability" → Auto Scaling (pay for what you use) + Load Balancer
+113. High Availability pattern: Multi-AZ + Auto Scaling + Load Balancer
+114. NAT Gateway = public internet routing → vi phạm compliance requirements
+115. "Private subnet" + "S3 access" + "not public internet" → VPC Endpoints
+116. Security Hub là central security dashboard tổng hợp từ nhiều sources, nhưng không chuyên về vulnerability assessment chi tiết như Inspector.
+117. Automate OS updates/patching → AWS Systems Manager Patch Manager
+118. Vulnerability assessment + monthly reports → Amazon Inspector
+119. "Multiple AWS accounts" + "centralized control" → AWS Organizations + SCP
+120. "Low login latency" → Lambda@Edge (runs at edge locations)
+121. "Serverless auth/authz" → Amazon Cognito + Lambda@Edge
+122. Transfer Acceleration = faster uploads, không phải web serving
+123. Lambda@Edge = low latency, regular Lambda = higher latency
+124. "Cross-account access" → IAM Role với Trust Policy
+125. "Development account users" → Trust policy specify Development account
+126. Cross-account pattern: Role in target account + Trust policy specify source account
+127. "Order processing" → SQS + Lambda pattern
+128. ".csv files" + "SQL queries" → Glue crawler + Athena
+129. "SAP" + "high memory utilization" → Memory optimized instances
+130. "SQL Server database" + "high memory" → Memory optimized instances
+
+
+
+
+
 
 
 
