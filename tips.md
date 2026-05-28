@@ -173,6 +173,7 @@
 158. "Audit all API calls + logins" → AWS CloudTrail (using with Control Tower)
 159. "Collect data/usage/configuration on-premises servers" → AWS Application Discovery Service
 160. "No duplicate" / "Exactly-once" → SQS FIFO Queue
+161. SCP dùng để kiểm soát permissions trong Organization, không phải authentication
 
 
 
