@@ -159,6 +159,21 @@
 144. "Automated response" + "WAF rules" → EventBridge + Lambda integration
 145. "Shared storage" + "multiple EC2 instances" → Amazon EFS
 146. "Holiday each year" → Recurring scheduled actions
+147. "HPC" + "tightly coupled" → Elastic Fabric Adapter (EFA)
+148. "HPC" + "storage" → FSx for Lustre
+149. SSM là service để quản lý và vận hành EC2, không có cơ chức năng hạn chế hay ngăn chặn người dùng tạo EC2.
+150. Service Catalog là service để tạo và quản lý các solution được build dựa trên CloudFormation, không có cơ chức năng hạn chế hay ngăn chặn người dùng tạo EC2.
+151. "Multiple AWS accounts" + "centrally restrict/control" → AWS Organizations + SCP . Bài toán nhắc đến kiến trúc multi-account và cần chặn một action nào đó → luôn nghĩ đến SCP
+152. Cognito User Pool là service chuyên dụng cho việc quản lý và xác thực người dùng (authentication) với đầy đủ tính năng: sign-up, sign-in, password recovery, MFA
+153. API Gateway REST APIs + Cognito Authorizer là pattern chuẩn cho RESTful APIs với authentication
+154. Lưu ý Cognito User Pool dùng để quản lý và xác thực đăng nhập người dùng (authentication), Cognito Identity Pool dùng để cấp quyền cho người dùng thao tác với AWS Service (authorization)
+155. "Lambda + environment variables + encrypt" → sử dụng AWS KMS
+156. "Control Tower" + "Prevent/Block deployment" → Proactive Controls
+157. "Occasionally" + "SQL query" + "S3" → Athena (serverless, pay-per-query)
+158. "Audit all API calls + logins" → AWS CloudTrail (using with Control Tower)
+159. "Collect data/usage/configuration on-premises servers" → AWS Application Discovery Service
+160. "No duplicate" / "Exactly-once" → SQS FIFO Queue
+
 
 
 
