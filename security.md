@@ -41,7 +41,7 @@ Best practice:
 | Việc nên làm | Giải thích |
 |---|---|
 | Bật MFA | Bảo vệ login |
-| Dùng IAM Role thay vì Access Key | Giảm rủi ro lộ key |
+| Dùng IAM Role thay vì Access Key | Giảm rủi ro lộ key. Access Key là long-term credential, nếu bị lộ thì attacker có thể dùng cho tới khi bạn disable/delete key. Còn IAM Role dùng temporary credential, tự động được cấp và xoay vòng, hết hạn thì không dùng lại được. AWS cũng khuyến nghị dùng IAM roles cho human users và workloads để sử dụng temporary credentials. |
 | Least Privilege | Chỉ cấp quyền cần thiết |
 | Không dùng root account hằng ngày | Root chỉ dùng việc đặc biệt |
 | Rotate access key | Đổi key định kỳ |
