@@ -1,4 +1,4 @@
-# Nên dùng IAM Role thay vì Access Key cho workload chạy trên AWS.
+# 🛑 Nên dùng IAM Role thay vì Access Key cho workload chạy trên AWS 🛑
 
 Lý do: Access Key là long-term credential, nếu bị lộ thì attacker có thể dùng cho tới khi bạn disable/delete key. Còn IAM Role dùng temporary credential, tự động được cấp và xoay vòng, hết hạn thì không dùng lại được. AWS cũng khuyến nghị dùng IAM roles cho human users và workloads để sử dụng temporary credentials.
 
@@ -277,4 +277,4 @@ ConsoleLogin without MFA
 Root account activity
 ```
 
-***Câu chốt: Access Key chỉ nên dùng khi không còn lựa chọn tốt hơn. Với workload chạy trên AWS, IAM Role gần như luôn là lựa chọn đúng hơn, an toàn hơn và dễ vận hành hơn.***
+***💢 Access Key chỉ nên dùng khi không còn lựa chọn tốt hơn. Với workload chạy trên AWS, IAM Role gần như luôn là lựa chọn đúng hơn, an toàn hơn và dễ vận hành hơn.***
