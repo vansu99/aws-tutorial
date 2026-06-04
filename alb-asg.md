@@ -176,7 +176,7 @@ Hoặc theo path:
 
 ## 4. Auto Scaling Group là gì?
 
-**Auto Scaling Group — ASG** là nhóm EC2 có thể tự tăng hoặc giảm số lượng instance.
+**Auto Scaling Group — ASG** là nhóm EC2 có thể tự tăng hoặc giảm số lượng instance theo tải thực tế.
 
 Nói dễ hiểu:
 
@@ -193,6 +193,38 @@ Không thiếu server khi traffic tăng
 Không lãng phí server khi traffic giảm
 Tự thay EC2 bị lỗi
 ```
+
+Mục tiêu là: **đủ server để chạy ổn, nhưng không dư quá nhiều để tránh tốn tiền**.
+
+---
+
+## Mô hình hoạt động đơn giản
+
+Kiến trúc thường gặp:
+
+```text
+Users
+  ↓
+CloudFront / Route 53
+  ↓
+Application Load Balancer
+  ↓
+Auto Scaling Group
+  ↓
+EC2 Instances
+```
+
+Trong đó:
+
+| Thành phần | Vai trò |
+|---|---|
+| Users | Người dùng truy cập hệ thống |
+| CloudFront / Route 53 | Phân phối nội dung hoặc định tuyến DNS |
+| Application Load Balancer | Nhận request và chia tải cho các EC2 |
+| Auto Scaling Group | Quản lý số lượng EC2 |
+| EC2 Instances | Server chạy ứng dụng |
+| CloudWatch | Theo dõi CPU, request, network, health check |
+| Scaling Policy | Quyết định khi nào thêm hoặc bớt EC2 |
 
 ---
 
@@ -232,9 +264,9 @@ ASG có 3 thông số rất quan trọng:
 
 | Thông số | Ý nghĩa |
 |---|---|
-| Min | Số EC2 tối thiểu |
+| Min | Luôn giữ ít nhất x EC2 để hệ thống không bị thiếu server |
 | Desired | Số EC2 mong muốn hiện tại |
-| Max | Số EC2 tối đa |
+| Max | Khi tải tăng, AWS được phép tăng tối đa lên x EC2 |
 
 Ví dụ:
 
@@ -245,6 +277,39 @@ Max     = 6
 ```
 
 Nghĩa là bình thường chạy 2 EC2, khi tải tăng có thể scale tối đa lên 6 EC2.
+
+Ví dụ rule:
+
+```text
+Nếu CPU > 70% trong 5 phút → thêm 1 EC2
+Nếu CPU < 30% trong 10 phút → giảm 1 EC2
+```
+
+Khi traffic tăng:
+
+```text
+CPU 80%
+↓
+CloudWatch Alarm báo tải cao
+↓
+Auto Scaling Group tạo thêm EC2
+↓
+Load Balancer chia traffic sang EC2 mới
+↓
+Website chạy ổn hơn
+```
+
+Khi traffic giảm:
+
+```text
+CPU 20%
+↓
+CloudWatch Alarm báo tải thấp
+↓
+Auto Scaling Group terminate bớt EC2
+↓
+Giảm chi phí
+```
 
 ### Scaling Policy
 
@@ -264,6 +329,51 @@ Giữ CPU trung bình khoảng 50%
 ```
 
 ASG sẽ tự tính cần thêm/bớt EC2.
+
+---
+
+## Auto Scaling không chỉ để “chịu tải”
+
+Nhiều người hiểu nhầm Auto Scaling chỉ dùng để tăng server khi đông user. Thực tế nó có 3 lợi ích lớn.
+
+### Tăng hiệu năng
+
+Khi user đông, hệ thống có thêm EC2 để xử lý request.
+
+Ví dụ:
+
+```text
+1 EC2 xử lý 1.000 request/phút
+3 EC2 xử lý khoảng 3.000 request/phút
+```
+
+### Tăng độ sẵn sàng
+
+Nếu 1 EC2 bị lỗi, Auto Scaling có thể tự thay thế bằng instance mới.
+
+Ví dụ:
+
+```text
+EC2-1 Healthy
+EC2-2 Unhealthy
+↓
+Auto Scaling terminate EC2-2
+↓
+Launch EC2-3 mới
+```
+
+Điểm này rất quan trọng trong production vì hệ thống không phụ thuộc vào một server duy nhất.
+
+### Tối ưu chi phí
+
+Không cần chạy 6 server cả ngày nếu ban đêm chỉ cần 2 server.
+
+```text
+Ban ngày: 5 EC2
+Ban đêm: 2 EC2
+```
+
+Bạn chỉ trả tiền cho EC2 đang chạy.
 
 ---
 
