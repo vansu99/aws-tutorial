@@ -8,6 +8,10 @@
       + Allow: ce:GetCostAndUsage
       + Allow: ce:GetCostAndUsageWithResources
 
+2. General configuration
+   + Memory: 256MB
+   + Ephemeral storage: 512MB
+
 ```text
 import json
 import os
