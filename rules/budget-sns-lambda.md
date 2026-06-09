@@ -7,6 +7,16 @@
    + Cost Explorer
       + Allow: ce:GetCostAndUsage
       + Allow: ce:GetCostAndUsageWithResources
+      + ```text
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ce:GetCostAndUsage",
+                "ce:GetCostAndUsageWithResources"
+            ],
+            "Resource": "*"
+        },
+        ```
 
 2. General configuration
    + Memory: 256MB
