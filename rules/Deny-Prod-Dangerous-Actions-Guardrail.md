@@ -397,3 +397,28 @@
   ]
 }
 ```
+
+Trong statement này:
+
+```
+"DenyS3ObjectDeleteOnKnownProductionBuckets"
+```
+
+Bạn phải đổi:
+
+```
+YOUR-PROD-BUCKET-NAME-1
+YOUR-PROD-BUCKET-NAME-2
+```
+
+thành bucket production thật
+
+```
+"Resource": [
+  "arn:aws:s3:::housecan-prod-files/*",
+  "arn:aws:s3:::videoapp-prod-media/*"
+]
+```
+
+
+
