@@ -1,0 +1,37 @@
+Một API Key lộ trên Git có thể khiến cả công ty trả giá: DevSecOps bảo vệ bạn như thế nào?
+Một trong những sai lầm phổ biến nhất khi xây dựng phần mềm là:
+"Để đến lúc deploy rồi tính chuyện security."
+Thực tế, nếu đợi đến Production mới kiểm tra bảo mật thì đã quá muộn.
+Một API Key bị commit lên Git.
+Một package open-source dính CVE.
+Một Docker image chứa lỗ hổng.
+Một Terraform script mở public database.
+Chỉ cần một mắt xích yếu là toàn bộ hệ thống có thể bị compromise. Đó là lý do các tổ chức hiện đại áp dụng mô hình:
+DevSecOps = Security ở mọi giai đoạn của SDLC
+Dưới đây là cách một pipeline DevSecOps tiêu chuẩn bảo vệ ứng dụng từ lúc viết code cho đến khi chạy trên Production. Giúp dev có cái nhìn insights hơn về bảo mật trong SDLC.
+Stage 1 — Code: Giai đoạn viết mã nguồn, tập trung bảo mật ngay từ đầu.
+- SAST (Static Application Security Testing): Quét mã nguồn tĩnh để tìm lỗ hổng bảo mật (ví dụ: SQL Injection, XSS) mà không cần chạy chương trình. Phát hiện sớm, sửa dễ.
+- Secret Scanning: Tự động quét để phát hiện các thông tin nhạy cảm bị rò rỉ trong code (như mật khẩu/connection string của database, API Key, Token).
+- Peer Review: Các lập trình viên review chéo mã nguồn của nhau để đảm bảo chất lượng và tính an toàn.
+
+Nếu tay nhanh hơn não, commit và push thông tin nhạy cảm (như mật khẩu, API key, Sercets) lên Git thì làm sao? Dùng Gitleaks để tìm/xác nhận key đã bị commit trước đó. Tiếp theo dùng git-filter-repo, công cụ được GitHub khuyên dùng để xóa vĩnh viễn file chứa secret ra khỏi toàn bộ lịch sử commit. Và để ngăn từ đầu? git-secrets sẽ chặn commit ngay tại local trước khi bạn kịp push nhầm. => Phòng bệnh tốt hơn chữa bệnh.
+Stage 2 — Build: Giai đoạn build mã nguồn thành các thành phần thực thi:
+- Dep Scan (Dependency Scanning): Quét các thư viện mã nguồn mở bên thứ ba được sử dụng trong dự án để tìm lỗ hổng bảo mật (CVE).
+- License Check: Kiểm tra giấy phép (license) của các thư viện đi kèm xem có hợp pháp và tuân thủ quy định của công ty không.
+- SBOM Gen (Software Bill of Materials Generation): tự động tạo ra một bản kiểm kê chi tiết (SBOM), liệt kê toàn bộ các thành phần, thư viện, gói mã nguồn mở, và các phụ thuộc (dependency) tạo nên một ứng dụng phần mềm.
+Stage 3 — Test: Giai đoạn chạy thử phần mềm trong môi trường UAT/STG
+-DAST (Dynamic Application Security Testing): Kiểm thử bảo mật động bằng cách giả lập/tạo request vào ứng dụng đang chạy để tìm lỗ hổng runtime.
+- Pen Testing (Penetration Testing): Kiểm thử xâm nhập (thường do con người thực hiện chuyên sâu) nhằm tìm ra các điểm yếu logic.
+- IaC Scan (Infrastructure as Code Scan): Quét các file cấu hình hạ tầng (như Terraform, CloudFormation) để tìm lỗi bảo mật trước khi khởi tạo tài nguyên Cloud. Các tool như Checkov, cfn-nag, tfsec, AWS CDK nag.
+
+Stage 4 — Package: Chuẩn bị đóng gói sourcecode thành docker image để sẵn sàng deploy
+- Container Scan: Quét lỗ hổng bảo mật bên trong các Docker Image (hệ điều hành nền, các gói cài đặt). Tools như ECR Scanning, Trivy, OPA / Kyverno: Admission controller —
+reject pod nếu image không có signature hợp lệ hoặc có critical CVE
+- Image Sign: Ký số (chữ ký điện tử) lên Container Image
+để đảm bảo tính toàn vẹn, xác thực image này không bị chỉnh sửa bất hợp pháp. Trên AWS hỗ trợ dịch vụ AWS Signer.
+- Registry Push: Đẩy image đã được kiểm duyệt lên kho lưu trữ tập trung (như Docker Hub, AWS ECR).
+
+Stage 5 — Deploy: Không phải build thành công là được deploy
+- Policy Gate: Cổng kiểm duyệt tự động dựa trên các chính sách (policies). Nếu không thỏa mãn các tiêu chuẩn an toàn, hệ thống sẽ chặn không cho deploy. ví dụ CVSS > 8.0 -> deny. IaC có Critical Findings -> Deny.
+- Config Check: Kiểm tra cấu hình thực tế của môi trường chạy để tránh các lỗi như mở nhầm cổng (port), sai quyền truy cập. Môi trường production có đang mở nhầm port 22 ra Internet không? Quyền truy cập có bị cấu hình sai không? Config Checklist kiểm tra tất cả.
+- Drift Detect: Phát hiện sự sai lệch cấu hình giữa môi trường thực tế đang chạy so với file cấu hình gốc (IaC) ban đầu - ai đó sửa tay, ai đó thêm rule. Drift Detection phát hiện sự khác biệt đó và cảnh báo ngay.
