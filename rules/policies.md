@@ -101,7 +101,7 @@ Policy này dùng để bắt buộc người dùng phải gắn tag env khi t�
 ### DenyDeleteResourcesEnvProd
 
 Policy này dùng để bảo vệ resource production, cụ thể:
-Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=prod` hoặc `Env=Prod` cho service: EC2, RDS, S3, Lambda, Cloudfront
+Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=prod` hoặc `Env=Prod` cho service: EC2, RDS, S3, Lambda, Cloudfront, DynamoDB, ECS, ElastiCache, Tag
 
 ```text
 {
