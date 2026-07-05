@@ -101,14 +101,16 @@ Policy này dùng để bắt buộc người dùng phải gắn tag env khi t�
 ### DenyDeleteResourcesEnvProd
 
 Policy này dùng để bảo vệ resource production, cụ thể:
-Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=prod` hoặc `Env=Prod` cho service: EC2, RDS, S3, Lambda, Cloudfront, DynamoDB, ECS, ElastiCache, Tag
+Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=prod` hoặc `Env=Prod` cho service: EC2, RDS, S3, Lambda, Cloudfront, DynamoDB, ECS, ElastiCache, Tag, KMS, IAM, Secret Manager, Backup
+
+
 
 ```text
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "DenyStopTerminateDeleteEC2Prod",
+      "Sid": "DenyDeleteProdResources-key-env",
       "Effect": "Deny",
       "Action": [
         "ec2:TerminateInstances",
@@ -119,169 +121,156 @@ Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=p
         "ec2:DeleteSubnet",
         "ec2:DeleteVpc",
         "ec2:DeleteNetworkInterface",
-        "ec2:DeleteKeyPair"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyDeleteRDSProd",
-      "Effect": "Deny",
-      "Action": [
+        "ec2:DeleteKeyPair",
+        "ec2:DeleteNatGateway",
+        "ec2:DeleteInternetGateway",
+        "ec2:DeleteRouteTable",
+        "ec2:ReleaseAddress",
+        "ec2:DeleteVpcPeeringConnection",
         "rds:DeleteDBInstance",
         "rds:DeleteDBCluster",
         "rds:DeleteDBSnapshot",
-        "rds:DeleteDBClusterSnapshot"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyDeleteS3Prod",
-      "Effect": "Deny",
-      "Action": [
+        "rds:DeleteDBClusterSnapshot",
         "s3:DeleteBucket",
         "s3:DeleteObject",
-        "s3:DeleteObjectVersion"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyDeleteLambdaProd",
-      "Effect": "Deny",
-      "Action": [
+        "s3:DeleteObjectVersion",
         "lambda:DeleteFunction",
         "lambda:DeleteFunctionUrlConfig",
-        "lambda:DeleteLayerVersion"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyDeleteCloudFrontProd",
-      "Effect": "Deny",
-      "Action": [
+        "lambda:DeleteLayerVersion",
         "cloudfront:DeleteDistribution",
         "cloudfront:DeleteFunction",
         "cloudfront:DeleteKeyGroup",
         "cloudfront:DeletePublicKey",
         "cloudfront:DeleteOriginAccessControl",
-        "cloudfront:DeleteCloudFrontOriginAccessIdentity"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyDeleteEKSProd",
-      "Effect": "Deny",
-      "Action": [
+        "cloudfront:DeleteCloudFrontOriginAccessIdentity",
         "eks:DeleteCluster",
         "eks:DeleteNodegroup",
-        "eks:DeleteFargateProfile"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyDeleteECSProd",
-      "Effect": "Deny",
-      "Action": [
+        "eks:DeleteFargateProfile",
         "ecs:DeleteCluster",
         "ecs:DeleteService",
         "ecs:DeleteTaskDefinitions",
-        "ecs:DeleteCapacityProvider"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyDeleteElastiCacheProd",
-      "Effect": "Deny",
-      "Action": [
+        "ecs:DeleteCapacityProvider",
         "elasticache:DeleteCacheCluster",
         "elasticache:DeleteReplicationGroup",
         "elasticache:DeleteCacheSubnetGroup",
-        "elasticache:DeleteSnapshot"
+        "elasticache:DeleteSnapshot",
+        "dynamodb:DeleteTable",
+        "dynamodb:DeleteBackup",
+        "kms:ScheduleKeyDeletion",
+        "kms:DisableKey",
+        "kms:DeleteAlias",
+        "kms:DeleteImportedKeyMaterial",
+        "secretsmanager:DeleteSecret",
+        "ssm:DeleteParameter",
+        "ssm:DeleteParameters",
+        "iam:DeleteRole",
+        "iam:DeleteUser",
+        "iam:DeletePolicy",
+        "iam:DeleteAccessKey",
+        "elasticloadbalancing:DeleteLoadBalancer",
+        "elasticloadbalancing:DeleteTargetGroup",
+        "autoscaling:DeleteAutoScalingGroup",
+        "route53:DeleteHostedZone",
+        "logs:DeleteLogGroup",
+        "backup:DeleteBackupVault",
+        "backup:DeleteBackupPlan",
+        "acm:DeleteCertificate",
+        "sqs:DeleteQueue",
+        "sns:DeleteTopic",
+        "ecr:DeleteRepository"
       ],
       "Resource": "*",
       "Condition": {
-        "StringEquals": {
+        "StringEqualsIgnoreCase": {
           "aws:ResourceTag/env": [
             "prod",
-            "Prod"
+            "production"
           ]
         }
       }
     },
     {
-      "Sid": "DenyDeleteDynamoDBProd",
+      "Sid": "DenyDeleteProdResources-key-Env",
       "Effect": "Deny",
       "Action": [
+        "ec2:TerminateInstances",
+        "ec2:StopInstances",
+        "ec2:DeleteVolume",
+        "ec2:DeleteSnapshot",
+        "ec2:DeleteSecurityGroup",
+        "ec2:DeleteSubnet",
+        "ec2:DeleteVpc",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DeleteKeyPair",
+        "ec2:DeleteNatGateway",
+        "ec2:DeleteInternetGateway",
+        "ec2:DeleteRouteTable",
+        "ec2:ReleaseAddress",
+        "ec2:DeleteVpcPeeringConnection",
+        "rds:DeleteDBInstance",
+        "rds:DeleteDBCluster",
+        "rds:DeleteDBSnapshot",
+        "rds:DeleteDBClusterSnapshot",
+        "s3:DeleteBucket",
+        "s3:DeleteObject",
+        "s3:DeleteObjectVersion",
+        "lambda:DeleteFunction",
+        "lambda:DeleteFunctionUrlConfig",
+        "lambda:DeleteLayerVersion",
+        "cloudfront:DeleteDistribution",
+        "cloudfront:DeleteFunction",
+        "cloudfront:DeleteKeyGroup",
+        "cloudfront:DeletePublicKey",
+        "cloudfront:DeleteOriginAccessControl",
+        "cloudfront:DeleteCloudFrontOriginAccessIdentity",
+        "eks:DeleteCluster",
+        "eks:DeleteNodegroup",
+        "eks:DeleteFargateProfile",
+        "ecs:DeleteCluster",
+        "ecs:DeleteService",
+        "ecs:DeleteTaskDefinitions",
+        "ecs:DeleteCapacityProvider",
+        "elasticache:DeleteCacheCluster",
+        "elasticache:DeleteReplicationGroup",
+        "elasticache:DeleteCacheSubnetGroup",
+        "elasticache:DeleteSnapshot",
         "dynamodb:DeleteTable",
-        "dynamodb:DeleteBackup"
+        "dynamodb:DeleteBackup",
+        "kms:ScheduleKeyDeletion",
+        "kms:DisableKey",
+        "kms:DeleteAlias",
+        "kms:DeleteImportedKeyMaterial",
+        "secretsmanager:DeleteSecret",
+        "ssm:DeleteParameter",
+        "ssm:DeleteParameters",
+        "iam:DeleteRole",
+        "iam:DeleteUser",
+        "iam:DeletePolicy",
+        "iam:DeleteAccessKey",
+        "elasticloadbalancing:DeleteLoadBalancer",
+        "elasticloadbalancing:DeleteTargetGroup",
+        "autoscaling:DeleteAutoScalingGroup",
+        "route53:DeleteHostedZone",
+        "logs:DeleteLogGroup",
+        "backup:DeleteBackupVault",
+        "backup:DeleteBackupPlan",
+        "acm:DeleteCertificate",
+        "sqs:DeleteQueue",
+        "sns:DeleteTopic",
+        "ecr:DeleteRepository"
       ],
       "Resource": "*",
       "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
+        "StringEqualsIgnoreCase": {
+          "aws:ResourceTag/Env": [
             "prod",
-            "Prod"
+            "production"
           ]
         }
       }
     },
     {
-      "Sid": "DenyRemoveEnvProjectTagFromProd",
+      "Sid": "DenyRemoveEnvTagFromProd",
       "Effect": "Deny",
       "Action": [
         "ec2:DeleteTags",
@@ -293,16 +282,25 @@ Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=p
         "elasticache:RemoveTagsFromResource",
         "dynamodb:UntagResource",
         "cloudfront:UntagResource",
+        "kms:UntagResource",
+        "secretsmanager:UntagResource",
+        "ssm:RemoveTagsFromResource",
+        "iam:UntagRole",
+        "iam:UntagUser",
+        "iam:UntagPolicy",
+        "elasticloadbalancing:RemoveTags",
+        "autoscaling:DeleteTags",
+        "route53:ChangeTagsForResource",
+        "logs:UntagLogGroup",
+        "backup:UntagResource",
+        "acm:RemoveTagsFromCertificate",
+        "sqs:UntagQueue",
+        "sns:UntagResource",
+        "ecr:UntagResource",
         "tag:UntagResources"
       ],
       "Resource": "*",
       "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/env": [
-            "prod",
-            "Prod"
-          ]
-        },
         "ForAnyValue:StringEqualsIgnoreCase": {
           "aws:TagKeys": [
             "env",
