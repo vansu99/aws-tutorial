@@ -315,3 +315,28 @@ Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=p
 }
 ```
 
+### Cloudwatch Log (Write/Put)
+
+Name: CloudWatchLogsWritePolicy
+
+```text
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:DescribeLogStreams",
+                "logs:DescribeLogGroups"
+            ],
+            "Resource": "arn:aws:logs:*:*:*"
+        }
+    ]
+}
+```
+
+
+
