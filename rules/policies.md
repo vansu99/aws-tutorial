@@ -110,7 +110,7 @@ Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=p
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "DenyDeleteProdResources-key-env",
+      "Sid": "DenyDestructiveActionsOnProdResources",
       "Effect": "Deny",
       "Action": [
         "ec2:TerminateInstances",
@@ -127,57 +127,70 @@ Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=p
         "ec2:DeleteRouteTable",
         "ec2:ReleaseAddress",
         "ec2:DeleteVpcPeeringConnection",
+
+        "rds:StopDBInstance",
+        "rds:StopDBCluster",
         "rds:DeleteDBInstance",
         "rds:DeleteDBCluster",
         "rds:DeleteDBSnapshot",
         "rds:DeleteDBClusterSnapshot",
-        "s3:DeleteBucket",
-        "s3:DeleteObject",
-        "s3:DeleteObjectVersion",
+
         "lambda:DeleteFunction",
         "lambda:DeleteFunctionUrlConfig",
-        "lambda:DeleteLayerVersion",
+
         "cloudfront:DeleteDistribution",
         "cloudfront:DeleteFunction",
-        "cloudfront:DeleteKeyGroup",
-        "cloudfront:DeletePublicKey",
-        "cloudfront:DeleteOriginAccessControl",
-        "cloudfront:DeleteCloudFrontOriginAccessIdentity",
+
         "eks:DeleteCluster",
         "eks:DeleteNodegroup",
         "eks:DeleteFargateProfile",
+
         "ecs:DeleteCluster",
         "ecs:DeleteService",
         "ecs:DeleteTaskDefinitions",
         "ecs:DeleteCapacityProvider",
+
         "elasticache:DeleteCacheCluster",
         "elasticache:DeleteReplicationGroup",
         "elasticache:DeleteCacheSubnetGroup",
         "elasticache:DeleteSnapshot",
+
         "dynamodb:DeleteTable",
-        "dynamodb:DeleteBackup",
+
         "kms:ScheduleKeyDeletion",
         "kms:DisableKey",
-        "kms:DeleteAlias",
         "kms:DeleteImportedKeyMaterial",
+
         "secretsmanager:DeleteSecret",
+
         "ssm:DeleteParameter",
         "ssm:DeleteParameters",
+
         "iam:DeleteRole",
         "iam:DeleteUser",
         "iam:DeletePolicy",
         "iam:DeleteAccessKey",
+
         "elasticloadbalancing:DeleteLoadBalancer",
         "elasticloadbalancing:DeleteTargetGroup",
+
         "autoscaling:DeleteAutoScalingGroup",
-        "route53:DeleteHostedZone",
+
         "logs:DeleteLogGroup",
+
         "backup:DeleteBackupVault",
         "backup:DeleteBackupPlan",
+        "backup:DeleteRecoveryPoint",
+
         "acm:DeleteCertificate",
+
         "sqs:DeleteQueue",
+        "sqs:PurgeQueue",
+
         "sns:DeleteTopic",
-        "ecr:DeleteRepository"
+
+        "ecr:DeleteRepository",
+        "ecr:BatchDeleteImage"
       ],
       "Resource": "*",
       "Condition": {
@@ -190,117 +203,81 @@ Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=p
       }
     },
     {
-      "Sid": "DenyDeleteProdResources-key-Env",
+      "Sid": "DenyChangingProtectedTagsOnProdResources",
       "Effect": "Deny",
       "Action": [
-        "ec2:TerminateInstances",
-        "ec2:StopInstances",
-        "ec2:DeleteVolume",
-        "ec2:DeleteSnapshot",
-        "ec2:DeleteSecurityGroup",
-        "ec2:DeleteSubnet",
-        "ec2:DeleteVpc",
-        "ec2:DeleteNetworkInterface",
-        "ec2:DeleteKeyPair",
-        "ec2:DeleteNatGateway",
-        "ec2:DeleteInternetGateway",
-        "ec2:DeleteRouteTable",
-        "ec2:ReleaseAddress",
-        "ec2:DeleteVpcPeeringConnection",
-        "rds:DeleteDBInstance",
-        "rds:DeleteDBCluster",
-        "rds:DeleteDBSnapshot",
-        "rds:DeleteDBClusterSnapshot",
-        "s3:DeleteBucket",
-        "s3:DeleteObject",
-        "s3:DeleteObjectVersion",
-        "lambda:DeleteFunction",
-        "lambda:DeleteFunctionUrlConfig",
-        "lambda:DeleteLayerVersion",
-        "cloudfront:DeleteDistribution",
-        "cloudfront:DeleteFunction",
-        "cloudfront:DeleteKeyGroup",
-        "cloudfront:DeletePublicKey",
-        "cloudfront:DeleteOriginAccessControl",
-        "cloudfront:DeleteCloudFrontOriginAccessIdentity",
-        "eks:DeleteCluster",
-        "eks:DeleteNodegroup",
-        "eks:DeleteFargateProfile",
-        "ecs:DeleteCluster",
-        "ecs:DeleteService",
-        "ecs:DeleteTaskDefinitions",
-        "ecs:DeleteCapacityProvider",
-        "elasticache:DeleteCacheCluster",
-        "elasticache:DeleteReplicationGroup",
-        "elasticache:DeleteCacheSubnetGroup",
-        "elasticache:DeleteSnapshot",
-        "dynamodb:DeleteTable",
-        "dynamodb:DeleteBackup",
-        "kms:ScheduleKeyDeletion",
-        "kms:DisableKey",
-        "kms:DeleteAlias",
-        "kms:DeleteImportedKeyMaterial",
-        "secretsmanager:DeleteSecret",
-        "ssm:DeleteParameter",
-        "ssm:DeleteParameters",
-        "iam:DeleteRole",
-        "iam:DeleteUser",
-        "iam:DeletePolicy",
-        "iam:DeleteAccessKey",
-        "elasticloadbalancing:DeleteLoadBalancer",
-        "elasticloadbalancing:DeleteTargetGroup",
-        "autoscaling:DeleteAutoScalingGroup",
-        "route53:DeleteHostedZone",
-        "logs:DeleteLogGroup",
-        "backup:DeleteBackupVault",
-        "backup:DeleteBackupPlan",
-        "acm:DeleteCertificate",
-        "sqs:DeleteQueue",
-        "sns:DeleteTopic",
-        "ecr:DeleteRepository"
+        "ec2:CreateTags",
+        "ec2:DeleteTags",
+
+        "rds:AddTagsToResource",
+        "rds:RemoveTagsFromResource",
+
+        "lambda:TagResource",
+        "lambda:UntagResource",
+
+        "eks:TagResource",
+        "eks:UntagResource",
+
+        "ecs:TagResource",
+        "ecs:UntagResource",
+
+        "elasticache:AddTagsToResource",
+        "elasticache:RemoveTagsFromResource",
+
+        "dynamodb:TagResource",
+        "dynamodb:UntagResource",
+
+        "cloudfront:TagResource",
+        "cloudfront:UntagResource",
+
+        "kms:TagResource",
+        "kms:UntagResource",
+
+        "secretsmanager:TagResource",
+        "secretsmanager:UntagResource",
+
+        "ssm:AddTagsToResource",
+        "ssm:RemoveTagsFromResource",
+
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:TagUser",
+        "iam:UntagUser",
+        "iam:TagPolicy",
+        "iam:UntagPolicy",
+
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags",
+
+        "autoscaling:CreateOrUpdateTags",
+        "autoscaling:DeleteTags",
+
+        "logs:TagResource",
+        "logs:UntagResource",
+
+        "backup:TagResource",
+        "backup:UntagResource",
+
+        "acm:AddTagsToCertificate",
+        "acm:RemoveTagsFromCertificate",
+
+        "sqs:TagQueue",
+        "sqs:UntagQueue",
+
+        "sns:TagResource",
+        "sns:UntagResource",
+
+        "ecr:TagResource",
+        "ecr:UntagResource"
       ],
       "Resource": "*",
       "Condition": {
         "StringEqualsIgnoreCase": {
-          "aws:ResourceTag/Env": [
+          "aws:ResourceTag/env": [
             "prod",
             "production"
           ]
-        }
-      }
-    },
-    {
-      "Sid": "DenyRemoveEnvTagFromProd",
-      "Effect": "Deny",
-      "Action": [
-        "ec2:DeleteTags",
-        "rds:RemoveTagsFromResource",
-        "s3:DeleteBucketTagging",
-        "lambda:UntagResource",
-        "eks:UntagResource",
-        "ecs:UntagResource",
-        "elasticache:RemoveTagsFromResource",
-        "dynamodb:UntagResource",
-        "cloudfront:UntagResource",
-        "kms:UntagResource",
-        "secretsmanager:UntagResource",
-        "ssm:RemoveTagsFromResource",
-        "iam:UntagRole",
-        "iam:UntagUser",
-        "iam:UntagPolicy",
-        "elasticloadbalancing:RemoveTags",
-        "autoscaling:DeleteTags",
-        "route53:ChangeTagsForResource",
-        "logs:UntagLogGroup",
-        "backup:UntagResource",
-        "acm:RemoveTagsFromCertificate",
-        "sqs:UntagQueue",
-        "sns:UntagResource",
-        "ecr:UntagResource",
-        "tag:UntagResources"
-      ],
-      "Resource": "*",
-      "Condition": {
+        },
         "ForAnyValue:StringEqualsIgnoreCase": {
           "aws:TagKeys": [
             "env",
