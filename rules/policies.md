@@ -103,7 +103,7 @@ Policy này dùng để bắt buộc người dùng phải gắn tag env khi t�
 Policy này dùng để bảo vệ resource production, cụ thể:
 Policy này sẽ chặn các thao tác nguy hiểm nếu resource có tag `env=prod` hoặc `Env=Prod` cho service: EC2, RDS, S3, Lambda, Cloudfront, DynamoDB, ECS, ElastiCache, Tag, KMS, IAM, Secret Manager, Backup
 
-
+Protects production resources from accidental deletion, termination, stopping, or other destructive actions based on the env/Env tag with values prod or production. It also prevents modification or removal of protected tags such as env and project on production resources.
 
 ```text
 {
