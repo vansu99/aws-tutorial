@@ -46,7 +46,7 @@ Chặn tạo resource nếu không có tag project.
             "Resource": "*",
             "Condition": {
                 "Null": {
-                    "aws:RequestTag/project": "true",
+                    "aws:RequestTag/project": "true"
                 },
                 "StringEquals": {
                     "aws:ResourceAccount": "${aws:PrincipalAccount}"
