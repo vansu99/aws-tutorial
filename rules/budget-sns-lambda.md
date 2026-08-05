@@ -1,4 +1,4 @@
-# Setup Budget SNS Lambda Function
+# Setup Budget SNS Lambda Function with MSTeams
 
 ## Yêu cầu
 
